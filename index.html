@@ -904,6 +904,11 @@
     const settingsUserName = document.getElementById("settings-user-name");
     const settingsLogoutButton = document.getElementById("settings-logout-button");
     const settingsClearAllButton = document.getElementById("settings-clear-all-button");
+    nameImagePreviewImg.addEventListener("error", () => {
+      nameImagePreviewImg.removeAttribute("src");
+      nameImagePreviewImg.removeAttribute("data-source-url");
+      nameImagePreviewText.textContent = "이미지를 불러오지 못했어요. 다른 제품명으로 다시 시도해 주세요.";
+    });
 
     function isLikelyEmail(value) {
       return typeof value === "string" && value.includes("@");
@@ -954,10 +959,21 @@
     const COSMOS_SYNC_ENDPOINT = String(
       APP_CONFIG.cosmosSyncEndpoint || "http://localhost:7071/api/users/upsert"
     ).trim();
-    const PRODUCT_IMAGE_SEARCH_ENDPOINT = String(
+    let PRODUCT_IMAGE_SEARCH_ENDPOINT = String(
       APP_CONFIG.productImageSearchEndpoint
       || COSMOS_SYNC_ENDPOINT.replace(/\/users\/upsert$/, "/products/image-search")
+      || "https://cocopau-func-kue03q.azurewebsites.net/api/products/image-search"
     ).trim();
+    const FALLBACK_IMAGE_SEARCH_ENDPOINT = "https://cocopau-func-kue03q.azurewebsites.net/api/products/image-search";
+    if (PRODUCT_IMAGE_SEARCH_ENDPOINT.includes("localhost:7071")) {
+      PRODUCT_IMAGE_SEARCH_ENDPOINT = FALLBACK_IMAGE_SEARCH_ENDPOINT;
+    }
+    const PRODUCT_IMAGE_PROXY_ENDPOINT = String(
+      APP_CONFIG.productImageProxyEndpoint
+      || COSMOS_SYNC_ENDPOINT.replace(/\/users\/upsert$/, "/products/image-proxy")
+    ).trim();
+    const USE_PRODUCT_IMAGE_PROXY = Boolean(APP_CONFIG.useProductImageProxy);
+    const PRODUCT_IMAGE_PRESET_MAP = [];
     let googleTokenClient = null;
     let googleTokenClientClientId = "";
     let currentAuthMode = "guest";
@@ -970,47 +986,154 @@
     let pendingDeleteAll = false;
     let imagePreviewTimerId = null;
     let imagePreviewRequestSeq = 0;
+    let productImageSearchEnabled = Boolean(PRODUCT_IMAGE_SEARCH_ENDPOINT);
+    let imageRefreshInFlight = false;
 
     function getPlaceholderImageUrl() {
-      return "./assets/torriden-sample.png";
+      return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Crect width='160' height='160' fill='%23f1f5f9'/%3E%3Cpath d='M32 112l28-32 18 20 18-22 32 34H32z' fill='%23cbd5e1'/%3E%3Ccircle cx='58' cy='54' r='10' fill='%23cbd5e1'/%3E%3C/svg%3E";
+    }
+
+    function normalizeProductKeyword(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/\s+/g, "")
+        .replace(/[^a-z0-9가-힣]/g, "");
+    }
+
+    function findPresetProductImageUrl(name) {
+      const normalizedName = normalizeProductKeyword(name);
+      if (!normalizedName) {
+        return "";
+      }
+
+      const matchedPreset = PRODUCT_IMAGE_PRESET_MAP.find((preset) => {
+        if (!preset || !Array.isArray(preset.keywords) || !preset.imageUrl) {
+          return false;
+        }
+
+        return preset.keywords.some((keyword) => {
+          const normalizedKeyword = normalizeProductKeyword(keyword);
+          return normalizedKeyword && normalizedName.includes(normalizedKeyword);
+        });
+      });
+
+      return matchedPreset ? String(matchedPreset.imageUrl).trim() : "";
+    }
+
+    function hashNameToSeed(value) {
+      const text = String(value || "");
+      let hash = 0;
+      for (let index = 0; index < text.length; index += 1) {
+        hash = (hash * 31 + text.charCodeAt(index)) % 100000;
+      }
+      return Math.abs(hash) + 1;
+    }
+
+    function getNameBasedFallbackImageUrl(name) {
+      const keyword = String(name || "").trim();
+      if (!keyword) {
+        return getPlaceholderImageUrl();
+      }
+      return getPlaceholderImageUrl();
     }
 
     function resolveProductImageUrl(name, existingImageUrl) {
       const existing = String(existingImageUrl || "").trim();
       if (existing) {
+        const normalizedExisting = existing.toLowerCase();
+        if (normalizedExisting.includes("torriden-sample.png") || normalizedExisting.includes("source.unsplash.com")) {
+          return "";
+        }
         return existing;
       }
-      return getPlaceholderImageUrl();
+      const presetImageUrl = findPresetProductImageUrl(name);
+      if (presetImageUrl) {
+        return presetImageUrl;
+      }
+      return "";
+    }
+
+    function isTemporaryImageUrl(imageUrl) {
+      const url = String(imageUrl || "").trim().toLowerCase();
+      if (!url) {
+        return true;
+      }
+
+      return url.includes("torriden-sample.png")
+        || url.includes("source.unsplash.com")
+        || url.startsWith("data:image/svg+xml");
+    }
+
+    function toDisplayImageUrl(imageUrl) {
+      const raw = String(imageUrl || "").trim();
+      if (!raw) {
+        return getPlaceholderImageUrl();
+      }
+
+      if (!/^https?:\/\//i.test(raw)) {
+        return raw;
+      }
+
+      if (!USE_PRODUCT_IMAGE_PROXY || !PRODUCT_IMAGE_PROXY_ENDPOINT) {
+        return raw;
+      }
+
+      return PRODUCT_IMAGE_PROXY_ENDPOINT + "?url=" + encodeURIComponent(raw);
     }
 
     async function fetchProductImageFromNaver(name) {
       const keyword = String(name || "").trim();
-      if (!keyword || keyword.length < 2 || !PRODUCT_IMAGE_SEARCH_ENDPOINT) {
+      if (!keyword || keyword.length < 2 || !PRODUCT_IMAGE_SEARCH_ENDPOINT || !productImageSearchEnabled) {
         return "";
       }
 
-      const requestUrl = PRODUCT_IMAGE_SEARCH_ENDPOINT + "?q=" + encodeURIComponent(keyword);
-      const response = await fetch(requestUrl, {
-        method: "GET",
-        headers: { Accept: "application/json" }
-      });
+      const candidates = [];
+      candidates.push(PRODUCT_IMAGE_SEARCH_ENDPOINT);
+      if (PRODUCT_IMAGE_SEARCH_ENDPOINT !== FALLBACK_IMAGE_SEARCH_ENDPOINT) {
+        candidates.push(FALLBACK_IMAGE_SEARCH_ENDPOINT);
+      }
+      let lastErrorMessage = "";
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error("이미지 검색 실패 (" + response.status + "): " + errorText);
+      for (const endpoint of candidates) {
+        try {
+          const requestUrl = endpoint + "?q=" + encodeURIComponent(keyword);
+          const response = await fetch(requestUrl, {
+            method: "GET",
+            headers: { Accept: "application/json" }
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            if (
+              response.status === 500
+              && (errorText.includes("Missing required app setting: NAVER_CLIENT_ID")
+                || errorText.includes("Missing required app setting: NAVER_CLIENT_SECRET"))
+            ) {
+              productImageSearchEnabled = false;
+              return "";
+            }
+            lastErrorMessage = "이미지 검색 실패 (" + response.status + ")";
+            continue;
+          }
+
+          const payload = await response.json();
+          if (!payload || !Array.isArray(payload.items) || payload.items.length === 0) {
+            continue;
+          }
+
+          const first = payload.items.find((item) => item && typeof item.imageUrl === "string" && item.imageUrl.trim());
+          if (first) {
+            return String(first.imageUrl).trim();
+          }
+        } catch (error) {
+          lastErrorMessage = error && error.message ? String(error.message) : "요청 실패";
+        }
       }
 
-      const payload = await response.json();
-      if (!payload || !Array.isArray(payload.items) || payload.items.length === 0) {
-        return "";
+      if (lastErrorMessage) {
+        throw new Error(lastErrorMessage);
       }
-
-      const first = payload.items.find((item) => item && typeof item.imageUrl === "string" && item.imageUrl.trim());
-      if (!first) {
-        return "";
-      }
-
-      return String(first.imageUrl).trim();
+      return "";
     }
 
     async function renderNameImagePreview(preferredImageUrl) {
@@ -1025,7 +1148,7 @@
 
       const preferred = String(preferredImageUrl || "").trim();
       if (preferred) {
-        nameImagePreviewImg.src = preferred;
+        nameImagePreviewImg.src = toDisplayImageUrl(preferred);
         nameImagePreviewImg.setAttribute("data-source-url", preferred);
         nameImagePreviewImg.alt = name + " 제품 이미지";
         nameImagePreviewText.textContent = "'" + name + "' 저장된 제품 이미지";
@@ -1034,12 +1157,16 @@
       }
 
       const requestSeq = ++imagePreviewRequestSeq;
-      const placeholderImageUrl = getPlaceholderImageUrl();
-      nameImagePreviewImg.src = placeholderImageUrl;
-      nameImagePreviewImg.removeAttribute("data-source-url");
+      const fallbackImageUrl = resolveProductImageUrl(name, "");
+      nameImagePreviewImg.src = toDisplayImageUrl(fallbackImageUrl);
+      nameImagePreviewImg.setAttribute("data-source-url", fallbackImageUrl);
       nameImagePreviewImg.alt = name + " 이미지 미리보기";
       nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지를 찾는 중...";
       nameImagePreview.classList.remove("hidden");
+
+      if (!productImageSearchEnabled) {
+        nameImagePreviewText.textContent = "'" + name + "' 키 없이 사용할 수 있는 대표 이미지를 표시 중이에요.";
+      }
 
       try {
         const naverImageUrl = await fetchProductImageFromNaver(name);
@@ -1048,14 +1175,14 @@
         }
 
         if (!naverImageUrl) {
-          nameImagePreviewImg.src = placeholderImageUrl;
-          nameImagePreviewImg.removeAttribute("data-source-url");
+          nameImagePreviewImg.src = toDisplayImageUrl(fallbackImageUrl);
+          nameImagePreviewImg.setAttribute("data-source-url", fallbackImageUrl);
           nameImagePreviewImg.alt = name + " 이미지 미리보기";
           nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지를 아직 찾지 못했어요.";
           return;
         }
 
-        nameImagePreviewImg.src = naverImageUrl;
+        nameImagePreviewImg.src = toDisplayImageUrl(naverImageUrl);
         nameImagePreviewImg.setAttribute("data-source-url", naverImageUrl);
         nameImagePreviewImg.alt = name + " 제품 이미지";
         nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지(네이버)";
@@ -1064,10 +1191,48 @@
           return;
         }
 
-        nameImagePreviewImg.src = placeholderImageUrl;
-        nameImagePreviewImg.removeAttribute("data-source-url");
+        nameImagePreviewImg.src = toDisplayImageUrl(fallbackImageUrl);
+        nameImagePreviewImg.setAttribute("data-source-url", fallbackImageUrl);
         nameImagePreviewImg.alt = name + " 이미지 미리보기";
-        nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지를 아직 찾지 못했어요.";
+        const reason = error && error.message ? String(error.message) : "원인 확인 필요";
+        nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지 검색 실패: " + reason;
+        saveResult.textContent = "이미지 검색 오류: " + reason;
+      }
+    }
+
+    async function refreshTemporaryProductImages() {
+      if (imageRefreshInFlight || !Array.isArray(products) || products.length === 0) {
+        return;
+      }
+
+      imageRefreshInFlight = true;
+      let changed = false;
+
+      try {
+        for (let index = 0; index < products.length; index += 1) {
+          const item = products[index];
+          if (!item || !item.name || !isTemporaryImageUrl(item.imageUrl)) {
+            continue;
+          }
+
+          const searchedImageUrl = await fetchProductImageFromNaver(item.name);
+          if (!searchedImageUrl) {
+            continue;
+          }
+
+          products[index] = {
+            ...item,
+            imageUrl: searchedImageUrl
+          };
+          changed = true;
+        }
+      } finally {
+        imageRefreshInFlight = false;
+      }
+
+      if (changed) {
+        saveProducts();
+        renderProducts();
       }
     }
 
@@ -1238,6 +1403,7 @@
       products = loadProducts();
       renderSettings();
       renderProducts();
+      refreshTemporaryProductImages();
     }
 
     function loadSessionState() {
@@ -1400,7 +1566,7 @@
 
         return "<li class=\"product-item\">"
           + "<div class=\"product-row\">"
-            + "<img class=\"product-thumb\" src=\"" + escapeHtml(itemImageUrl) + "\" alt=\"" + escapeHtml(item.name) + " 이미지\" loading=\"lazy\">"
+            + "<img class=\"product-thumb\" src=\"" + escapeHtml(toDisplayImageUrl(itemImageUrl)) + "\" alt=\"" + escapeHtml(item.name) + " 이미지\" loading=\"lazy\" onerror=\"this.onerror=null;this.removeAttribute('src');this.setAttribute('alt','이미지 없음');\">"
             + "<div class=\"product-main\">"
               + "<p class=\"product-item-name\">" + escapeHtml(item.name) + "</p>"
               + "<p class=\"product-item-meta\">"
@@ -1475,7 +1641,7 @@
         const itemImageUrl = resolveProductImageUrl(item.name, item.imageUrl);
         return "<li class=\"product-item\">"
           + "<div class=\"product-row\">"
-            + "<img class=\"product-thumb\" src=\"" + escapeHtml(itemImageUrl) + "\" alt=\"" + escapeHtml(item.name) + " 이미지\" loading=\"lazy\">"
+            + "<img class=\"product-thumb\" src=\"" + escapeHtml(toDisplayImageUrl(itemImageUrl)) + "\" alt=\"" + escapeHtml(item.name) + " 이미지\" loading=\"lazy\" onerror=\"this.onerror=null;this.removeAttribute('src');this.setAttribute('alt','이미지 없음');\">"
             + "<div class=\"product-main\">"
               + "<p class=\"product-item-name\">" + escapeHtml(item.name) + "</p>"
               + "<p class=\"product-item-meta\">만료일 " + escapeHtml(formatDateLocal(item.expiry)) + "</p>"
@@ -1592,7 +1758,7 @@
       saveResult.textContent = "수정이 취소됐어요.";
     });
 
-    addProductForm.addEventListener("submit", (event) => {
+    addProductForm.addEventListener("submit", async (event) => {
       event.preventDefault();
 
       if (currentAuthMode !== "google") {
@@ -1601,14 +1767,27 @@
         return;
       }
 
+      let selectedImageUrl = String(nameImagePreviewImg.getAttribute("data-source-url") || "").trim();
+      const productName = productNameInput.value.trim();
+      if (productName && isTemporaryImageUrl(selectedImageUrl)) {
+        try {
+          const searchedImageUrl = await fetchProductImageFromNaver(productName);
+          if (searchedImageUrl) {
+            selectedImageUrl = searchedImageUrl;
+          }
+        } catch (error) {
+          saveResult.textContent = "실제 제품 이미지를 찾지 못했어요. 제품명을 더 구체적으로 입력해 주세요.";
+        }
+      }
+
       const product = {
         id: editingProductId || Date.now(),
-        name: productNameInput.value.trim(),
+        name: productName,
         category: productCategoryInput.value,
         openedAt: openedAtInput.value,
         imageUrl: resolveProductImageUrl(
-          productNameInput.value,
-          nameImagePreviewImg.getAttribute("data-source-url")
+          productName,
+          selectedImageUrl
         )
       };
 
@@ -1847,6 +2026,8 @@
 
       products = loadProducts();
       renderSettings();
+      renderProducts();
+      refreshTemporaryProductImages();
 
       const storageKey = getCurrentPouchStorageKey();
       if (storageKey) {
@@ -2025,4 +2206,3 @@
   </script>
 </body>
 </html>
-
