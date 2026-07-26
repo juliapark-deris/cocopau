@@ -13,7 +13,7 @@
     :root {
       color-scheme: light;
       --bg-main: linear-gradient(160deg, #fff7fb 0%, #fff2f8 55%, #ffeef6 100%);
-      --surface: rgba(255, 255, 255, 0.92);
+      --surface: rgba(255, 255, 255, 0.97);
       --surface-soft: #fff6fb;
       --surface-strong: #ffffff;
       --line: #e5e7eb;
@@ -24,10 +24,10 @@
       --brand-soft: #fce7f3;
       --danger: #dc2626;
       --danger-soft: #fee2e2;
-      --shadow-main: 0 18px 42px rgba(61, 70, 112, 0.15);
-      --shadow-soft: 0 10px 28px rgba(61, 70, 112, 0.1);
-      --radius-lg: 22px;
-      --radius-md: 14px;
+      --shadow-main: 0 10px 26px rgba(61, 70, 112, 0.12);
+      --shadow-soft: 0 8px 20px rgba(61, 70, 112, 0.09);
+      --radius-lg: 18px;
+      --radius-md: 10px;
       --radius-sm: 10px;
       --motion-fast: 160ms ease;
     }
@@ -38,7 +38,7 @@
       display: grid;
       place-items: center;
       font-family: "Noto Sans KR", sans-serif;
-      background: var(--bg-main);
+      background: linear-gradient(180deg, #fff8fb 0%, #fff5f9 100%);
       color: var(--text-main);
       cursor: default;
     }
@@ -167,20 +167,20 @@
     .main-screen {
       width: min(94vw, 420px);
       min-height: min(85vh, 760px);
-      background: var(--surface);
+      background: #ffffff;
       border: 1px solid var(--line);
-      border-radius: 26px;
+      border-radius: var(--radius-lg);
       box-shadow: var(--shadow-main);
       display: grid;
       grid-template-rows: auto 1fr auto;
       overflow: hidden;
-      backdrop-filter: blur(8px);
     }
 
     .main-header {
-      padding: 1rem 1rem 0.8rem;
+      padding: 0.95rem 1rem 0.8rem;
       border-bottom: 1px solid var(--line-soft);
       text-align: left;
+      background: #ffffff;
     }
 
     .main-header h2 {
@@ -198,20 +198,20 @@
     }
 
     .main-content {
-      padding: 1rem;
+      padding: 0.85rem;
       text-align: left;
       display: grid;
       gap: 0.7rem;
       align-content: start;
+      background: #fff9fc;
     }
 
     .card {
-      background: var(--surface-soft);
+      background: #ffffff;
       border: 1px solid var(--line-soft);
       border-radius: var(--radius-md);
       padding: 0.9rem;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
-      transition: filter var(--motion-fast), opacity var(--motion-fast), transform var(--motion-fast), box-shadow var(--motion-fast);
+      box-shadow: none;
     }
 
     .card h3 {
@@ -290,7 +290,7 @@
       border-top: 1px solid var(--line-soft);
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      background: rgba(255, 255, 255, 0.9);
+      background: #ffffff;
     }
 
     .tab-item {
@@ -307,6 +307,7 @@
       color: var(--brand);
       font-weight: 700;
       background: linear-gradient(180deg, rgba(236, 72, 153, 0.14), rgba(236, 72, 153, 0.04));
+      box-shadow: none;
     }
 
     .view-panel {
@@ -394,44 +395,68 @@
       padding: 0;
       list-style: none;
       display: grid;
-      gap: 0.55rem;
+      gap: 0.6rem;
     }
 
     .product-item {
-      background: var(--surface-strong);
-      border: 1px solid var(--line-soft);
+      background: #ffffff;
+      border: 1px solid #ecdbe6;
       border-radius: 12px;
-      padding: 0.7rem;
-      transition: filter var(--motion-fast), opacity var(--motion-fast), transform var(--motion-fast), box-shadow var(--motion-fast);
+      padding: 0.6rem;
+      box-shadow: 0 3px 10px rgba(120, 97, 110, 0.06);
+    }
+
+    .product-row {
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 0.55rem;
+      align-items: center;
+    }
+
+    .product-thumb {
+      width: 58px;
+      height: 58px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid #eadce5;
+      background: #f9f2f6;
+    }
+
+    .product-main {
+      min-width: 0;
     }
 
     .product-item-name {
       margin: 0;
-      font-size: 0.86rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: #1f2937;
+      line-height: 1.35;
     }
 
     .product-item-meta {
-      margin: 0.2rem 0 0;
-      font-size: 0.75rem;
+      margin: 0.18rem 0 0;
+      font-size: 0.74rem;
       color: #63748f;
     }
 
     .product-actions {
-      margin-top: 0.45rem;
+      margin-top: 0.5rem;
       display: flex;
-      gap: 0.4rem;
+      justify-content: flex-end;
+      gap: 0.35rem;
+      border-top: 1px solid #f3e8ef;
+      padding-top: 0.45rem;
     }
 
     .tiny-button {
-      min-height: 28px;
-      padding: 0 0.55rem;
+      min-height: 24px;
+      padding: 0 0.45rem;
       border-radius: 10px;
-      border: 1px solid #d2d9e6;
-      background: #ffffff;
+      border: 1px solid #e2d3dc;
+      background: #fffafb;
       color: #334155;
-      font-size: 0.73rem;
+      font-size: 0.7rem;
       font-weight: 700;
       cursor: pointer;
       transition: filter var(--motion-fast), opacity var(--motion-fast), transform var(--motion-fast), border-color var(--motion-fast);
@@ -467,48 +492,75 @@
     }
 
     #product-list-card {
-      padding-top: 0.55rem;
+      padding: 0;
+      overflow: hidden;
     }
 
     #product-list-card h3 {
-      margin-bottom: 0.4rem;
-    }
-
-    .summary-grid {
-      margin-top: 0.75rem;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.45rem;
-    }
-
-    .summary-item {
-      border: 1px solid var(--line-soft);
-      border-radius: 10px;
-      background: #ffffff;
-      padding: 0.45rem 0.35rem;
-    }
-
-    .summary-label {
       margin: 0;
-      font-size: 0.72rem;
-      color: #77839a;
-      text-align: center;
+      padding: 0.85rem 0.9rem 0.6rem;
+      border-bottom: 1px solid #f3e8ef;
     }
 
-    .summary-value {
-      margin: 0.25rem 0 0;
-      font-size: 1rem;
+    .summary-line {
+      margin-top: 0.62rem;
+      padding-top: 0.5rem;
+      border-top: 1px dashed var(--line-soft);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      color: #7b889d;
+      line-height: 1.35;
+    }
+
+    .summary-metric strong {
+      color: var(--brand);
       font-weight: 700;
-      color: #1f2937;
-      text-align: center;
-      line-height: 1.1;
+    }
+
+    .summary-sep {
+      color: #c8b2bf;
     }
 
     .product-tools {
-      margin-top: 0.55rem;
+      margin: 0;
       display: grid;
       grid-template-columns: 1fr 0.9fr;
       gap: 0.45rem;
+      padding: 0.55rem 0.9rem 0.6rem;
+      border-bottom: 1px solid #f3e8ef;
+      background: #fffafd;
+    }
+
+    .name-image-preview {
+      margin-top: 0.45rem;
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 0.45rem;
+      align-items: center;
+      border: 1px solid #f0dfe8;
+      border-radius: 10px;
+      padding: 0.35rem;
+      background: #fff9fc;
+    }
+
+    .name-image-preview img {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      border: 1px solid #ecdce5;
+      object-fit: cover;
+      background: #f7eef3;
+    }
+
+    .name-image-preview p {
+      margin: 0;
+      font-size: 0.72rem;
+      color: #7b889d;
+      text-align: left;
+      line-height: 1.35;
     }
 
     .product-tools input,
@@ -534,7 +586,8 @@
     }
 
     .list-empty {
-      margin: 0.65rem 0 0;
+      margin: 0;
+      padding: 0.8rem 0.9rem;
       font-size: 0.8rem;
       color: #77839a;
       text-align: left;
@@ -705,19 +758,12 @@
           <article class="card">
             <h3 id="registered-count-title">등록된 화장품 0개</h3>
             <p id="registered-count-desc">아직 제품이 없어요. 아래 탭의 등록하기에서 시작해요.</p>
-            <div class="summary-grid">
-              <div class="summary-item">
-                <p class="summary-label">전체</p>
-                <p class="summary-value" id="summary-total-count">0</p>
-              </div>
-              <div class="summary-item">
-                <p class="summary-label">임박</p>
-                <p class="summary-value" id="summary-soon-count">0</p>
-              </div>
-              <div class="summary-item">
-                <p class="summary-label">만료</p>
-                <p class="summary-value" id="summary-expired-count">0</p>
-              </div>
+            <div class="summary-line" aria-label="화장품 요약">
+              <span class="summary-metric">전체 <strong id="summary-total-count">0</strong></span>
+              <span class="summary-sep">|</span>
+              <span class="summary-metric">임박 <strong id="summary-soon-count">0</strong></span>
+              <span class="summary-sep">|</span>
+              <span class="summary-metric">만료 <strong id="summary-expired-count">0</strong></span>
             </div>
           </article>
           <article class="card hidden" id="product-list-card">
@@ -746,6 +792,10 @@
               <div class="field">
                 <label for="product-name">제품명</label>
                 <input id="product-name" name="productName" type="text" placeholder="예: 틴트 립밤" required>
+                <div class="name-image-preview hidden" id="name-image-preview">
+                  <img id="name-image-preview-img" alt="제품 이미지 미리보기">
+                  <p id="name-image-preview-text">제품명에 맞는 이미지가 자동으로 표시돼요.</p>
+                </div>
               </div>
               <div class="field">
                 <label for="product-category">카테고리</label>
@@ -830,6 +880,9 @@
     const saveProductButton = document.getElementById("save-product-button");
     const cancelEditButton = document.getElementById("cancel-edit-button");
     const productNameInput = document.getElementById("product-name");
+    const nameImagePreview = document.getElementById("name-image-preview");
+    const nameImagePreviewImg = document.getElementById("name-image-preview-img");
+    const nameImagePreviewText = document.getElementById("name-image-preview-text");
     const productCategoryInput = document.getElementById("product-category");
     const openedAtInput = document.getElementById("opened-at");
     const saveResult = document.getElementById("save-result");
@@ -901,6 +954,10 @@
     const COSMOS_SYNC_ENDPOINT = String(
       APP_CONFIG.cosmosSyncEndpoint || "http://localhost:7071/api/users/upsert"
     ).trim();
+    const PRODUCT_IMAGE_SEARCH_ENDPOINT = String(
+      APP_CONFIG.productImageSearchEndpoint
+      || COSMOS_SYNC_ENDPOINT.replace(/\/users\/upsert$/, "/products/image-search")
+    ).trim();
     let googleTokenClient = null;
     let googleTokenClientClientId = "";
     let currentAuthMode = "guest";
@@ -911,6 +968,108 @@
     let editingProductId = null;
     let pendingDeleteProductId = null;
     let pendingDeleteAll = false;
+    let imagePreviewTimerId = null;
+    let imagePreviewRequestSeq = 0;
+
+    function getPlaceholderImageUrl() {
+      return "./assets/torriden-sample.png";
+    }
+
+    function resolveProductImageUrl(name, existingImageUrl) {
+      const existing = String(existingImageUrl || "").trim();
+      if (existing) {
+        return existing;
+      }
+      return getPlaceholderImageUrl();
+    }
+
+    async function fetchProductImageFromNaver(name) {
+      const keyword = String(name || "").trim();
+      if (!keyword || keyword.length < 2 || !PRODUCT_IMAGE_SEARCH_ENDPOINT) {
+        return "";
+      }
+
+      const requestUrl = PRODUCT_IMAGE_SEARCH_ENDPOINT + "?q=" + encodeURIComponent(keyword);
+      const response = await fetch(requestUrl, {
+        method: "GET",
+        headers: { Accept: "application/json" }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error("이미지 검색 실패 (" + response.status + "): " + errorText);
+      }
+
+      const payload = await response.json();
+      if (!payload || !Array.isArray(payload.items) || payload.items.length === 0) {
+        return "";
+      }
+
+      const first = payload.items.find((item) => item && typeof item.imageUrl === "string" && item.imageUrl.trim());
+      if (!first) {
+        return "";
+      }
+
+      return String(first.imageUrl).trim();
+    }
+
+    async function renderNameImagePreview(preferredImageUrl) {
+      const name = productNameInput.value.trim();
+      if (!name) {
+        nameImagePreview.classList.add("hidden");
+        nameImagePreviewImg.removeAttribute("src");
+        nameImagePreviewImg.removeAttribute("data-source-url");
+        nameImagePreviewText.textContent = "제품명에 맞는 이미지가 자동으로 표시돼요.";
+        return;
+      }
+
+      const preferred = String(preferredImageUrl || "").trim();
+      if (preferred) {
+        nameImagePreviewImg.src = preferred;
+        nameImagePreviewImg.setAttribute("data-source-url", preferred);
+        nameImagePreviewImg.alt = name + " 제품 이미지";
+        nameImagePreviewText.textContent = "'" + name + "' 저장된 제품 이미지";
+        nameImagePreview.classList.remove("hidden");
+        return;
+      }
+
+      const requestSeq = ++imagePreviewRequestSeq;
+      const placeholderImageUrl = getPlaceholderImageUrl();
+      nameImagePreviewImg.src = placeholderImageUrl;
+      nameImagePreviewImg.removeAttribute("data-source-url");
+      nameImagePreviewImg.alt = name + " 이미지 미리보기";
+      nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지를 찾는 중...";
+      nameImagePreview.classList.remove("hidden");
+
+      try {
+        const naverImageUrl = await fetchProductImageFromNaver(name);
+        if (requestSeq !== imagePreviewRequestSeq) {
+          return;
+        }
+
+        if (!naverImageUrl) {
+          nameImagePreviewImg.src = placeholderImageUrl;
+          nameImagePreviewImg.removeAttribute("data-source-url");
+          nameImagePreviewImg.alt = name + " 이미지 미리보기";
+          nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지를 아직 찾지 못했어요.";
+          return;
+        }
+
+        nameImagePreviewImg.src = naverImageUrl;
+        nameImagePreviewImg.setAttribute("data-source-url", naverImageUrl);
+        nameImagePreviewImg.alt = name + " 제품 이미지";
+        nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지(네이버)";
+      } catch (error) {
+        if (requestSeq !== imagePreviewRequestSeq) {
+          return;
+        }
+
+        nameImagePreviewImg.src = placeholderImageUrl;
+        nameImagePreviewImg.removeAttribute("data-source-url");
+        nameImagePreviewImg.alt = name + " 이미지 미리보기";
+        nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지를 아직 찾지 못했어요.";
+      }
+    }
 
     function getCurrentPouchStorageKey() {
       if (currentAuthMode === "google") {
@@ -1228,6 +1387,7 @@
       productListCard.classList.remove("hidden");
       productList.innerHTML = filteredProducts.map((item) => {
         const status = getProductStatus(item);
+        const itemImageUrl = resolveProductImageUrl(item.name, item.imageUrl);
         let pillText = "D-" + status.diffDays;
         let pillClass = "normal";
 
@@ -1239,11 +1399,16 @@
         }
 
         return "<li class=\"product-item\">"
-          + "<p class=\"product-item-name\">" + escapeHtml(item.name) + "</p>"
-          + "<p class=\"product-item-meta\">"
-            + escapeHtml(item.category) + " · 만료일 " + escapeHtml(item.openedAt)
-          + "</p>"
-          + "<span class=\"status-pill " + pillClass + "\">" + pillText + "</span>"
+          + "<div class=\"product-row\">"
+            + "<img class=\"product-thumb\" src=\"" + escapeHtml(itemImageUrl) + "\" alt=\"" + escapeHtml(item.name) + " 이미지\" loading=\"lazy\">"
+            + "<div class=\"product-main\">"
+              + "<p class=\"product-item-name\">" + escapeHtml(item.name) + "</p>"
+              + "<p class=\"product-item-meta\">"
+                + escapeHtml(item.category) + " · 만료일 " + escapeHtml(item.openedAt)
+              + "</p>"
+              + "<span class=\"status-pill " + pillClass + "\">" + pillText + "</span>"
+            + "</div>"
+          + "</div>"
           + "<div class=\"product-actions\">"
             + "<button type=\"button\" class=\"tiny-button\" data-action=\"edit\" data-id=\"" + item.id + "\">수정</button>"
             + "<button type=\"button\" class=\"tiny-button delete\" data-action=\"delete\" data-id=\"" + item.id + "\">삭제</button>"
@@ -1307,10 +1472,16 @@
       soonListCard.classList.toggle("hidden", soonItems.length === 0);
 
       soonList.innerHTML = soonItems.map((item) => {
+        const itemImageUrl = resolveProductImageUrl(item.name, item.imageUrl);
         return "<li class=\"product-item\">"
-          + "<p class=\"product-item-name\">" + escapeHtml(item.name) + "</p>"
-          + "<p class=\"product-item-meta\">만료일 " + escapeHtml(formatDateLocal(item.expiry)) + "</p>"
-          + "<span class=\"status-pill soon\">D-" + item.diffDays + "</span>"
+          + "<div class=\"product-row\">"
+            + "<img class=\"product-thumb\" src=\"" + escapeHtml(itemImageUrl) + "\" alt=\"" + escapeHtml(item.name) + " 이미지\" loading=\"lazy\">"
+            + "<div class=\"product-main\">"
+              + "<p class=\"product-item-name\">" + escapeHtml(item.name) + "</p>"
+              + "<p class=\"product-item-meta\">만료일 " + escapeHtml(formatDateLocal(item.expiry)) + "</p>"
+              + "<span class=\"status-pill soon\">D-" + item.diffDays + "</span>"
+            + "</div>"
+          + "</div>"
           + "</li>";
       }).join("");
 
@@ -1385,6 +1556,16 @@
       renderProducts();
     });
 
+    productNameInput.addEventListener("input", () => {
+      if (imagePreviewTimerId) {
+        clearTimeout(imagePreviewTimerId);
+      }
+
+      imagePreviewTimerId = setTimeout(() => {
+        renderNameImagePreview();
+      }, 320);
+    });
+
     productList.addEventListener("click", (event) => {
       const button = event.target.closest("button[data-action]");
       if (!button) {
@@ -1406,6 +1587,8 @@
 
     cancelEditButton.addEventListener("click", () => {
       resetFormMode();
+      addProductForm.reset();
+      renderNameImagePreview();
       saveResult.textContent = "수정이 취소됐어요.";
     });
 
@@ -1422,7 +1605,11 @@
         id: editingProductId || Date.now(),
         name: productNameInput.value.trim(),
         category: productCategoryInput.value,
-        openedAt: openedAtInput.value
+        openedAt: openedAtInput.value,
+        imageUrl: resolveProductImageUrl(
+          productNameInput.value,
+          nameImagePreviewImg.getAttribute("data-source-url")
+        )
       };
 
       if (editingProductId) {
@@ -1436,9 +1623,9 @@
       saveProducts();
       renderProducts();
 
-      const wasEditing = Boolean(editingProductId);
       resetFormMode();
       addProductForm.reset();
+      renderNameImagePreview();
       saveResult.textContent = "";
       switchTab("pouch");
     });
@@ -1457,6 +1644,7 @@
       saveProductButton.textContent = "수정 내용 저장";
       cancelEditButton.classList.remove("hidden");
       saveResult.textContent = "수정할 항목을 바꾼 뒤 저장해 주세요.";
+      renderNameImagePreview(item.imageUrl);
       switchTab("add");
     }
 
@@ -1498,6 +1686,7 @@
         if (editingProductId) {
           addProductForm.reset();
           resetFormMode();
+          renderNameImagePreview();
         }
 
         renderProducts();
@@ -1528,6 +1717,7 @@
       if (editingProductId === id) {
         addProductForm.reset();
         resetFormMode();
+        renderNameImagePreview();
       }
 
       saveResult.textContent = "";
@@ -1592,6 +1782,7 @@
       closeDeleteConfirm();
       resetFormMode();
       addProductForm.reset();
+      renderNameImagePreview();
       saveResult.textContent = "";
 
       mainScreen.classList.add("hidden");
@@ -1834,3 +2025,4 @@
   </script>
 </body>
 </html>
+
