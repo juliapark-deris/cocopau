@@ -20,12 +20,9 @@ function corsHeaders() {
   };
 }
 
-function scoreShoppingItem(item, query) {
+function scoreImageItem(item, query) {
   const normalizedQuery = String(query || "").toLowerCase().trim();
   const title = stripHtml(item.title).toLowerCase();
-  const brand = String(item.brand || "").toLowerCase();
-  const mallName = String(item.mallName || "").toLowerCase();
-  const imageUrl = String(item.image || "").toLowerCase();
   let score = 0;
 
   if (normalizedQuery && title.includes(normalizedQuery)) {
@@ -37,34 +34,27 @@ function scoreShoppingItem(item, query) {
     if (title.includes(token)) {
       score += 18;
     }
-    if (brand.includes(token)) {
-      score += 10;
-    }
   });
 
-  if (mallName.includes("olive") || mallName.includes("올리브")) {
+  if (title.includes("올리브영") || title.includes("olive")) {
     score += 12;
-  }
-
-  if (imageUrl.includes("shopping.phinf.naver.net")) {
-    score += 8;
   }
 
   const noisyWords = ["세트", "기획", "증정", "묶음", "리필", "샘플", "미니"];
   noisyWords.forEach((word) => {
     if (title.includes(word)) {
-      score -= 12;
+      score -= 10;
     }
   });
 
   return score;
 }
 
-async function searchNaverShoppingImages(query) {
+async function searchNaverImages(query) {
   const clientId = getRequiredEnv("NAVER_CLIENT_ID");
   const clientSecret = getRequiredEnv("NAVER_CLIENT_SECRET");
   const encodedQuery = encodeURIComponent(query);
-  const url = `https://openapi.naver.com/v1/search/shop?query=${encodedQuery}&display=8&sort=sim`;
+  const url = `https://openapi.naver.com/v1/search/image?query=${encodedQuery}&display=20&sort=sim`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -76,28 +66,33 @@ async function searchNaverShoppingImages(query) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Naver shopping search failed (${response.status}): ${errorText}`);
+    throw new Error(`Naver image search failed (${response.status}): ${errorText}`);
   }
 
   const payload = await response.json();
   const items = Array.isArray(payload.items) ? payload.items : [];
 
   const mapped = items
-    .filter((item) => item && typeof item.image === "string" && item.image.trim())
-    .map((item) => ({
-      title: stripHtml(item.title),
-      imageUrl: String(item.image).trim(),
-      link: String(item.link || "").trim(),
-      mallName: String(item.mallName || "").trim(),
-      brand: String(item.brand || "").trim(),
-      lprice: String(item.lprice || "").trim(),
-      hprice: String(item.hprice || "").trim(),
-      productId: String(item.productId || "").trim(),
-      score: scoreShoppingItem(item, query)
-    }));
+    .map((item) => {
+      const directImage = String(item.link || "").trim();
+      const thumbImage = String(item.thumbnail || "").trim();
+      const imageUrl = directImage || thumbImage;
+      return {
+        title: stripHtml(item.title),
+        imageUrl,
+        link: directImage,
+        mallName: "",
+        brand: "",
+        lprice: "",
+        hprice: "",
+        productId: "",
+        score: scoreImageItem(item, query)
+      };
+    })
+    .filter((item) => item.imageUrl);
 
   mapped.sort((a, b) => b.score - a.score);
-  return mapped;
+  return mapped.slice(0, 8);
 }
 
 module.exports = async function (context, req) {
@@ -123,7 +118,7 @@ module.exports = async function (context, req) {
   }
 
   try {
-    const items = await searchNaverShoppingImages(query);
+    const items = await searchNaverImages(query);
     context.res = {
       status: 200,
       headers: {
@@ -147,7 +142,7 @@ module.exports = async function (context, req) {
       },
       body: {
         ok: false,
-        message: "네이버 쇼핑 이미지 검색 실패",
+        message: "네이버 이미지 검색 실패",
         detail: error.message
       }
     };
