@@ -537,18 +537,18 @@
     .name-image-preview {
       margin-top: 0.45rem;
       display: grid;
-      grid-template-columns: 44px 1fr;
-      gap: 0.45rem;
+      grid-template-columns: 88px 1fr;
+      gap: 0.65rem;
       align-items: center;
       border: 1px solid #f0dfe8;
       border-radius: 10px;
-      padding: 0.35rem;
+      padding: 0.5rem;
       background: #fff9fc;
     }
 
     .name-image-preview img {
-      width: 44px;
-      height: 44px;
+      width: 88px;
+      height: 88px;
       border-radius: 8px;
       border: 1px solid #ecdce5;
       object-fit: cover;
@@ -557,10 +557,46 @@
 
     .name-image-preview p {
       margin: 0;
-      font-size: 0.72rem;
+      font-size: 0.8rem;
       color: #7b889d;
       text-align: left;
       line-height: 1.35;
+    }
+
+    .name-suggestions {
+      margin-top: 0.35rem;
+      border: 1px solid #f0dfe8;
+      border-radius: 10px;
+      background: #ffffff;
+      box-shadow: 0 6px 16px rgba(57, 67, 103, 0.1);
+      max-height: 180px;
+      overflow: auto;
+    }
+
+    .name-suggestion-item {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: left;
+      padding: 0.55rem 0.65rem;
+      font-size: 0.8rem;
+      color: #334155;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .name-suggestion-item + .name-suggestion-item {
+      border-top: 1px solid #f4eaf0;
+    }
+
+    .name-suggestion-item:hover {
+      background: #f1f5f9;
+      color: #1f2937;
+    }
+
+    .name-suggestion-item.active {
+      background: #e2e8f0;
+      color: #1f2937;
     }
 
     .product-tools input,
@@ -791,10 +827,11 @@
             <form class="add-form" id="add-product-form">
               <div class="field">
                 <label for="product-name">제품명</label>
-                <input id="product-name" name="productName" type="text" placeholder="예: 틴트 립밤" required>
+                <input id="product-name" name="productName" type="text" placeholder="예: 틴트 립밤" required autocomplete="off" aria-autocomplete="list" aria-controls="name-suggestions">
+                <div class="name-suggestions hidden" id="name-suggestions" role="listbox" aria-label="연관 검색어"></div>
                 <div class="name-image-preview hidden" id="name-image-preview">
                   <img id="name-image-preview-img" alt="제품 이미지 미리보기">
-                  <p id="name-image-preview-text">제품명에 맞는 이미지가 자동으로 표시돼요.</p>
+                  <p id="name-image-preview-text"></p>
                 </div>
               </div>
               <div class="field">
@@ -880,6 +917,7 @@
     const saveProductButton = document.getElementById("save-product-button");
     const cancelEditButton = document.getElementById("cancel-edit-button");
     const productNameInput = document.getElementById("product-name");
+    const nameSuggestions = document.getElementById("name-suggestions");
     const nameImagePreview = document.getElementById("name-image-preview");
     const nameImagePreviewImg = document.getElementById("name-image-preview-img");
     const nameImagePreviewText = document.getElementById("name-image-preview-text");
@@ -986,6 +1024,9 @@
     let pendingDeleteAll = false;
     let imagePreviewTimerId = null;
     let imagePreviewRequestSeq = 0;
+    let nameSuggestionTimerId = null;
+    let nameSuggestionRequestSeq = 0;
+    let activeSuggestionIndex = -1;
     let productImageSearchEnabled = Boolean(PRODUCT_IMAGE_SEARCH_ENDPOINT);
     let imageRefreshInFlight = false;
 
@@ -1081,6 +1122,110 @@
       return PRODUCT_IMAGE_PROXY_ENDPOINT + "?url=" + encodeURIComponent(raw);
     }
 
+    function hideNameSuggestions() {
+      nameSuggestions.classList.add("hidden");
+      nameSuggestions.innerHTML = "";
+      activeSuggestionIndex = -1;
+      productNameInput.removeAttribute("aria-activedescendant");
+    }
+
+    function applySuggestionText(text) {
+      const picked = String(text || "").trim();
+      if (!picked) {
+        return;
+      }
+
+      productNameInput.value = picked;
+      hideNameSuggestions();
+      renderNameImagePreview();
+    }
+
+    function previewSuggestionImage(title, imageUrl) {
+      const safeTitle = String(title || "").trim();
+      const safeImageUrl = String(imageUrl || "").trim();
+      if (!safeTitle || !safeImageUrl) {
+        return;
+      }
+
+      nameImagePreviewImg.src = toDisplayImageUrl(safeImageUrl);
+      nameImagePreviewImg.alt = safeTitle + " 제품 이미지 미리보기";
+      nameImagePreviewText.textContent = "'" + safeTitle + "' 연관검색어 미리보기";
+      nameImagePreview.classList.remove("hidden");
+    }
+
+    async function fetchProductNameSuggestions(keyword) {
+      const query = String(keyword || "").trim();
+      if (!query || query.length < 2 || !PRODUCT_IMAGE_SEARCH_ENDPOINT) {
+        return [];
+      }
+
+      const endpointCandidates = [PRODUCT_IMAGE_SEARCH_ENDPOINT];
+      if (PRODUCT_IMAGE_SEARCH_ENDPOINT !== FALLBACK_IMAGE_SEARCH_ENDPOINT) {
+        endpointCandidates.push(FALLBACK_IMAGE_SEARCH_ENDPOINT);
+      }
+
+      for (const endpoint of endpointCandidates) {
+        try {
+          const requestUrl = endpoint + "?q=" + encodeURIComponent(query);
+          const response = await fetch(requestUrl, {
+            method: "GET",
+            headers: { Accept: "application/json" }
+          });
+          if (!response.ok) {
+            continue;
+          }
+
+          const payload = await response.json();
+          const items = Array.isArray(payload.items) ? payload.items : [];
+          const suggestionMap = new Map();
+          items.forEach((item) => {
+            const title = String((item && item.title) || "").trim();
+            const imageUrl = String((item && item.imageUrl) || "").trim();
+            if (!title || suggestionMap.has(title)) {
+              return;
+            }
+            suggestionMap.set(title, { title, imageUrl });
+          });
+
+          const suggestions = Array.from(suggestionMap.values()).slice(0, 7);
+          if (suggestions.length > 0) {
+            return suggestions;
+          }
+        } catch (error) {
+          // try next endpoint
+        }
+      }
+
+      return [];
+    }
+
+    function renderNameSuggestions(suggestions) {
+      if (!Array.isArray(suggestions) || suggestions.length === 0) {
+        hideNameSuggestions();
+        return;
+      }
+
+      nameSuggestions.innerHTML = suggestions.map((suggestion, index) => {
+        const title = String((suggestion && suggestion.title) || "").trim();
+        const imageUrl = String((suggestion && suggestion.imageUrl) || "").trim();
+        const itemId = "name-suggestion-" + index;
+        return "<button"
+          + " type=\"button\""
+          + " class=\"name-suggestion-item\""
+          + " id=\"" + itemId + "\""
+          + " role=\"option\""
+          + " data-index=\"" + index + "\""
+          + " data-title=\"" + escapeHtml(title) + "\""
+          + " data-image-url=\"" + escapeHtml(imageUrl) + "\""
+          + ">"
+          + escapeHtml(title)
+          + "</button>";
+      }).join("");
+      nameSuggestions.classList.remove("hidden");
+      activeSuggestionIndex = -1;
+      productNameInput.removeAttribute("aria-activedescendant");
+    }
+
     async function fetchProductImageFromNaver(name) {
       const keyword = String(name || "").trim();
       if (!keyword || keyword.length < 2 || !PRODUCT_IMAGE_SEARCH_ENDPOINT || !productImageSearchEnabled) {
@@ -1142,7 +1287,7 @@
         nameImagePreview.classList.add("hidden");
         nameImagePreviewImg.removeAttribute("src");
         nameImagePreviewImg.removeAttribute("data-source-url");
-        nameImagePreviewText.textContent = "제품명에 맞는 이미지가 자동으로 표시돼요.";
+        nameImagePreviewText.textContent = "";
         return;
       }
 
@@ -1178,7 +1323,7 @@
           nameImagePreviewImg.src = toDisplayImageUrl(fallbackImageUrl);
           nameImagePreviewImg.setAttribute("data-source-url", fallbackImageUrl);
           nameImagePreviewImg.alt = name + " 이미지 미리보기";
-          nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지를 아직 찾지 못했어요.";
+          nameImagePreviewText.textContent = "'" + name + "' 실제 이미지를 찾지 못했어요.";
           return;
         }
 
@@ -1194,9 +1339,8 @@
         nameImagePreviewImg.src = toDisplayImageUrl(fallbackImageUrl);
         nameImagePreviewImg.setAttribute("data-source-url", fallbackImageUrl);
         nameImagePreviewImg.alt = name + " 이미지 미리보기";
-        const reason = error && error.message ? String(error.message) : "원인 확인 필요";
-        nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지 검색 실패: " + reason;
-        saveResult.textContent = "이미지 검색 오류: " + reason;
+        nameImagePreviewText.textContent = "'" + name + "' 실제 이미지를 찾지 못했어요.";
+        saveResult.textContent = "실제 이미지를 찾지 못했어요.";
       }
     }
 
@@ -1723,13 +1867,122 @@
     });
 
     productNameInput.addEventListener("input", () => {
+      const keyword = productNameInput.value.trim();
       if (imagePreviewTimerId) {
         clearTimeout(imagePreviewTimerId);
+      }
+      if (nameSuggestionTimerId) {
+        clearTimeout(nameSuggestionTimerId);
       }
 
       imagePreviewTimerId = setTimeout(() => {
         renderNameImagePreview();
       }, 320);
+
+      if (keyword.length < 2) {
+        hideNameSuggestions();
+        return;
+      }
+
+      nameSuggestionTimerId = setTimeout(async () => {
+        const requestSeq = ++nameSuggestionRequestSeq;
+        const suggestions = await fetchProductNameSuggestions(keyword);
+        if (requestSeq !== nameSuggestionRequestSeq) {
+          return;
+        }
+
+        renderNameSuggestions(suggestions);
+      }, 260);
+    });
+
+    productNameInput.addEventListener("focus", async () => {
+      const keyword = productNameInput.value.trim();
+      if (keyword.length < 2) {
+        return;
+      }
+
+      const requestSeq = ++nameSuggestionRequestSeq;
+      const suggestions = await fetchProductNameSuggestions(keyword);
+      if (requestSeq !== nameSuggestionRequestSeq) {
+        return;
+      }
+
+      renderNameSuggestions(suggestions);
+    });
+
+    productNameInput.addEventListener("keydown", (event) => {
+      const items = Array.from(nameSuggestions.querySelectorAll(".name-suggestion-item"));
+      if (items.length === 0) {
+        return;
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        activeSuggestionIndex = activeSuggestionIndex <= 0 ? items.length - 1 : activeSuggestionIndex - 1;
+      } else if (event.key === "Enter") {
+        if (activeSuggestionIndex >= 0 && activeSuggestionIndex < items.length) {
+          event.preventDefault();
+          applySuggestionText(items[activeSuggestionIndex].dataset.title || items[activeSuggestionIndex].textContent);
+        }
+        return;
+      } else if (event.key === "Escape") {
+        hideNameSuggestions();
+        return;
+      } else {
+        return;
+      }
+
+      items.forEach((item, index) => {
+        item.classList.toggle("active", index === activeSuggestionIndex);
+      });
+      if (activeSuggestionIndex >= 0) {
+        const activeItem = items[activeSuggestionIndex];
+        productNameInput.setAttribute("aria-activedescendant", activeItem.id);
+        activeItem.scrollIntoView({ block: "nearest" });
+      }
+    });
+
+    nameSuggestions.addEventListener("click", (event) => {
+      const target = event.target.closest(".name-suggestion-item");
+      if (!target) {
+        return;
+      }
+
+      applySuggestionText(target.dataset.title || target.textContent);
+    });
+
+    nameSuggestions.addEventListener("mouseover", (event) => {
+      const target = event.target.closest(".name-suggestion-item");
+      if (!target) {
+        return;
+      }
+
+      const items = Array.from(nameSuggestions.querySelectorAll(".name-suggestion-item"));
+      activeSuggestionIndex = Number(target.dataset.index || -1);
+      items.forEach((item, index) => {
+        item.classList.toggle("active", index === activeSuggestionIndex);
+      });
+      previewSuggestionImage(target.dataset.title || target.textContent, target.dataset.imageUrl || "");
+    });
+
+    nameSuggestions.addEventListener("mouseleave", () => {
+      const items = Array.from(nameSuggestions.querySelectorAll(".name-suggestion-item"));
+      items.forEach((item) => item.classList.remove("active"));
+      activeSuggestionIndex = -1;
+      productNameInput.removeAttribute("aria-activedescendant");
+      renderNameImagePreview();
+    });
+
+    document.addEventListener("click", (event) => {
+      if (
+        event.target !== productNameInput
+        && !nameSuggestions.contains(event.target)
+      ) {
+        hideNameSuggestions();
+      }
     });
 
     productList.addEventListener("click", (event) => {
@@ -1754,6 +2007,7 @@
     cancelEditButton.addEventListener("click", () => {
       resetFormMode();
       addProductForm.reset();
+      hideNameSuggestions();
       renderNameImagePreview();
       saveResult.textContent = "수정이 취소됐어요.";
     });
@@ -1804,6 +2058,7 @@
 
       resetFormMode();
       addProductForm.reset();
+      hideNameSuggestions();
       renderNameImagePreview();
       saveResult.textContent = "";
       switchTab("pouch");
@@ -1817,6 +2072,7 @@
 
       editingProductId = item.id;
       productNameInput.value = item.name;
+      hideNameSuggestions();
       productCategoryInput.value = item.category;
       openedAtInput.value = item.openedAt;
       addFormTitle.textContent = "화장품 수정하기";
