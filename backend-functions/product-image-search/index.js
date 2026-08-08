@@ -64,7 +64,7 @@ async function searchNaverShoppingImages(query) {
   const clientId = getRequiredEnv("NAVER_CLIENT_ID");
   const clientSecret = getRequiredEnv("NAVER_CLIENT_SECRET");
   const encodedQuery = encodeURIComponent(query);
-  const url = `https://openapi.naver.com/v1/search/shop.json?query=${encodedQuery}&display=8&sort=sim`;
+  const url = `https://openapi.naver.com/v1/search/shop?query=${encodedQuery}&display=8&sort=sim`;
 
   const response = await fetch(url, {
     method: "GET",
