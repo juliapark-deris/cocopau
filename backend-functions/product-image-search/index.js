@@ -72,6 +72,7 @@ async function searchNaverImages(query) {
   const payload = await response.json();
   const items = Array.isArray(payload.items) ? payload.items : [];
 
+  const noisyWords = ["세트", "기획", "증정", "묶음", "리필", "샘플", "미니"];
   const mapped = items
     .map((item) => {
       const directImage = String(item.link || "").trim();
@@ -89,7 +90,11 @@ async function searchNaverImages(query) {
         score: scoreImageItem(item, query)
       };
     })
-    .filter((item) => item.imageUrl);
+    .filter((item) => item.imageUrl)
+    .filter((item) => {
+      const title = item.title.toLowerCase();
+      return !noisyWords.some((word) => title.includes(word));
+    });
 
   mapped.sort((a, b) => b.score - a.score);
   return mapped.slice(0, 8);
