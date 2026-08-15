@@ -8,6 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <title>코코파우</title>
   <script src="./app-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root {
@@ -384,6 +385,32 @@
       box-shadow: 0 8px 18px rgba(236, 72, 153, 0.25);
     }
 
+    .camera-button {
+      min-height: 38px;
+      border: 1px solid #f5c2d9;
+      border-radius: 12px;
+      background: #fff5f9;
+      color: #be185d;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter var(--motion-fast), opacity var(--motion-fast), transform var(--motion-fast), border-color var(--motion-fast);
+    }
+
+    .camera-tools {
+      display: grid;
+      gap: 0.35rem;
+      margin-top: 0.4rem;
+    }
+
+    .camera-note {
+      margin: 0.35rem 0 0;
+      font-size: 0.74rem;
+      color: #7b889d;
+      text-align: left;
+      line-height: 1.4;
+    }
+
     .save-result {
       margin: 0;
       font-size: 0.76rem;
@@ -718,6 +745,7 @@
       .tab-item:hover,
       .tiny-button:hover,
       .setting-button:hover,
+      .camera-button:hover,
       .save-button:hover,
       .profile-avatar-button:hover,
       .social-button:hover,
@@ -731,6 +759,7 @@
     .social-button:active,
     .guest-button:active,
     .save-button:active,
+    .camera-button:active,
     .tiny-button:active,
     .setting-button:active,
     .tab-item:active,
@@ -743,6 +772,7 @@
     .social-button:focus-visible,
     .guest-button:focus-visible,
     .save-button:focus-visible,
+    .camera-button:focus-visible,
     .tiny-button:focus-visible,
     .setting-button:focus-visible,
     .tab-item:focus-visible,
@@ -838,6 +868,11 @@
                   <img id="name-image-preview-img" alt="">
                   <p id="name-image-preview-text"></p>
                 </div>
+                <div class="camera-tools">
+                  <button type="button" class="camera-button" id="product-camera-button">카메라로 찍어서 분석하기</button>
+                  <input id="product-camera-input" class="hidden" type="file" accept="image/*" capture="environment">
+                </div>
+                <p class="camera-note">사진 속 글자를 읽어서 제품명을 자동으로 채워드려요.</p>
               </div>
               <div class="field">
                 <label for="product-category">카테고리</label>
@@ -926,6 +961,8 @@
     const nameImagePreview = document.getElementById("name-image-preview");
     const nameImagePreviewImg = document.getElementById("name-image-preview-img");
     const nameImagePreviewText = document.getElementById("name-image-preview-text");
+    const productCameraButton = document.getElementById("product-camera-button");
+    const productCameraInput = document.getElementById("product-camera-input");
     const productCategoryInput = document.getElementById("product-category");
     const openedAtInput = document.getElementById("opened-at");
     const saveResult = document.getElementById("save-result");
@@ -1037,6 +1074,7 @@
     let imagePreviewRequestSeq = 0;
     let nameSuggestionTimerId = null;
     let nameSuggestionRequestSeq = 0;
+    let cameraAnalysisRequestSeq = 0;
     let activeSuggestionIndex = -1;
     let productImageSearchEnabled = Boolean(PRODUCT_IMAGE_SEARCH_ENDPOINT);
     let imageRefreshInFlight = false;
@@ -1432,6 +1470,92 @@
       nameSuggestions.classList.remove("hidden");
       activeSuggestionIndex = -1;
       productNameInput.removeAttribute("aria-activedescendant");
+    }
+
+    function buildCameraSearchQuery(rawText) {
+      const lines = String(rawText || "")
+        .replace(/\r/g, "\n")
+        .split("\n")
+        .map((line) => normalizeWhitespace(line))
+        .filter((line) => line && line.length >= 2)
+        .filter((line) => !/^(?:www|http|barcode|qr|ean|isbn|lot|batch)/i.test(line));
+
+      if (lines.length === 0) {
+        return "";
+      }
+
+      const joined = lines.slice(0, 4).join(" ");
+      const cleaned = collapseRepeatedPhrase(
+        stripNoise(removeStoreNoise(joined))
+          .replace(/[|>•·/+,:[\]{}()"'“”‘’~]/g, " ")
+      );
+      const words = normalizeWhitespace(cleaned).split(/\s+/).filter(Boolean);
+      return words.slice(0, 8).join(" ");
+    }
+
+    async function recognizeCameraText(file) {
+      if (!window.Tesseract || typeof window.Tesseract.recognize !== "function") {
+        throw new Error("사진 분석 도구가 아직 로드되지 않았어요.");
+      }
+
+      const result = await window.Tesseract.recognize(file, "kor+eng", {
+        logger: () => {}
+      });
+
+      return String((result && result.data && result.data.text) || "").trim();
+    }
+
+    async function analyzeCameraProductPhoto(file) {
+      const requestSeq = ++cameraAnalysisRequestSeq;
+      saveResult.textContent = "사진에서 제품명을 읽는 중이에요...";
+      productCameraButton.disabled = true;
+      productCameraInput.disabled = true;
+      hideNameSuggestions();
+
+      try {
+        const rawText = await recognizeCameraText(file);
+        if (requestSeq !== cameraAnalysisRequestSeq) {
+          return;
+        }
+
+        const query = buildCameraSearchQuery(rawText);
+        if (!query) {
+          saveResult.textContent = "사진 글자를 잘 읽지 못했어요. 조금 더 선명하게 다시 찍어 주세요.";
+          return;
+        }
+
+        const suggestions = await fetchProductNameSuggestions(query);
+        if (requestSeq !== cameraAnalysisRequestSeq) {
+          return;
+        }
+
+        if (suggestions.length > 0) {
+          const primary = suggestions[0];
+          productNameInput.value = primary.title;
+          renderNameSuggestions(suggestions);
+          previewSuggestionImage(primary.title, primary.imageUrl);
+          saveResult.textContent = "사진에서 '" + primary.title + "'로 찾았어요. 저장 버튼만 누르면 등록돼요.";
+        } else {
+          productNameInput.value = query;
+          renderNameImagePreview();
+          saveResult.textContent = "사진에서 '" + query + "'를 읽었어요. 조금만 다듬으면 더 정확해요.";
+        }
+
+        productNameInput.focus();
+        productNameInput.setSelectionRange(productNameInput.value.length, productNameInput.value.length);
+      } catch (error) {
+        if (requestSeq !== cameraAnalysisRequestSeq) {
+          return;
+        }
+
+        console.error("Camera analysis failed", error);
+        saveResult.textContent = "사진 분석에 실패했어요. 다시 찍거나 직접 입력해 주세요.";
+      } finally {
+        if (requestSeq === cameraAnalysisRequestSeq) {
+          productCameraButton.disabled = false;
+          productCameraInput.disabled = false;
+        }
+      }
     }
 
     async function fetchProductImageFromNaver(name) {
@@ -2087,6 +2211,20 @@
 
     productCategoryFilter.addEventListener("change", () => {
       renderProducts();
+    });
+
+    productCameraButton.addEventListener("click", () => {
+      productCameraInput.click();
+    });
+
+    productCameraInput.addEventListener("change", async () => {
+      const file = productCameraInput.files && productCameraInput.files[0];
+      productCameraInput.value = "";
+      if (!file) {
+        return;
+      }
+
+      await analyzeCameraProductPhoto(file);
     });
 
     productNameInput.addEventListener("input", () => {
