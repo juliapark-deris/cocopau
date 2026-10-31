@@ -198,6 +198,63 @@
       color: var(--text-sub);
     }
 
+    .focus-banner {
+      margin-top: 0.62rem;
+      border: 1px solid #f2c9dd;
+      border-radius: 12px;
+      background: linear-gradient(120deg, #fff7fc 0%, #fff1f7 55%, #ffedf5 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.48rem 0.58rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .focus-banner::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -60%;
+      width: 46%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+      animation: banner-shine 3.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes banner-shine {
+      0% { left: -60%; }
+      50% { left: 120%; }
+      100% { left: 120%; }
+    }
+
+    .focus-banner-text {
+      margin: 0;
+      font-size: 0.76rem;
+      color: #6b5879;
+      line-height: 1.3;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .focus-banner-button {
+      min-height: 28px;
+      border: 1px solid #f3b1cf;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #be185d;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0 0.56rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: filter var(--motion-fast), opacity var(--motion-fast), transform var(--motion-fast);
+    }
+
     .main-content {
       padding: 0.85rem;
       text-align: left;
@@ -290,7 +347,7 @@
     .tab-bar {
       border-top: 1px solid var(--line-soft);
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       background: #ffffff;
     }
 
@@ -444,9 +501,10 @@
       width: 58px;
       height: 58px;
       border-radius: 10px;
-      object-fit: cover;
+      object-fit: contain;
       border: 1px solid #eadce5;
-      background: #f9f2f6;
+      background: #ffffff;
+      padding: 4px;
     }
 
     .product-main {
@@ -551,6 +609,55 @@
       color: #c8b2bf;
     }
 
+    .category-stats {
+      margin-top: 0.2rem;
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .category-row {
+      display: grid;
+      grid-template-columns: 64px 1fr auto;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.76rem;
+      color: #5f6f86;
+    }
+
+    .category-name {
+      font-weight: 700;
+      color: #455166;
+    }
+
+    .category-bar {
+      position: relative;
+      height: 8px;
+      border-radius: 999px;
+      background: #f5eaf0;
+      overflow: hidden;
+    }
+
+    .category-bar-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #f472b6, #ec4899);
+    }
+
+    .category-value {
+      font-weight: 700;
+      color: #7c4d65;
+      min-width: 28px;
+      text-align: right;
+    }
+
+    .category-empty {
+      margin: 0;
+      font-size: 0.78rem;
+      color: #7988a0;
+    }
+
     .product-tools {
       margin: 0;
       display: grid;
@@ -579,8 +686,9 @@
       height: 88px;
       border-radius: 8px;
       border: 1px solid #ecdce5;
-      object-fit: cover;
-      background: #f7eef3;
+      object-fit: contain;
+      background: #ffffff;
+      padding: 6px;
     }
 
     .name-image-preview p {
@@ -603,6 +711,8 @@
       box-shadow: 0 6px 16px rgba(57, 67, 103, 0.1);
       max-height: 180px;
       overflow: auto;
+      position: relative;
+      z-index: 12;
     }
 
     .name-suggestion-item {
@@ -629,6 +739,54 @@
     .name-suggestion-item.active {
       background: #e2e8f0;
       color: #1f2937;
+    }
+
+    body[data-theme="dark"] .name-suggestions {
+      border-color: #61769b;
+      background: #2d3c55;
+      box-shadow: 0 8px 18px rgba(10, 16, 28, 0.35);
+    }
+
+    body[data-theme="dark"] .name-suggestion-item {
+      color: #dbeafe;
+    }
+
+    body[data-theme="dark"] .name-suggestion-item + .name-suggestion-item {
+      border-top-color: #425777;
+    }
+
+    body[data-theme="dark"] .name-suggestion-item:hover {
+      background: #324766;
+      color: #eff6ff;
+    }
+
+    body[data-theme="dark"] .name-suggestion-item.active {
+      background: #38537a;
+      color: #eff6ff;
+    }
+
+    body[data-theme="mint"] .name-suggestions {
+      border-color: #9adfcd;
+      background: #f3fffb;
+      box-shadow: 0 8px 18px rgba(15, 118, 110, 0.15);
+    }
+
+    body[data-theme="mint"] .name-suggestion-item {
+      color: #0f766e;
+    }
+
+    body[data-theme="mint"] .name-suggestion-item + .name-suggestion-item {
+      border-top-color: #c2efe2;
+    }
+
+    body[data-theme="mint"] .name-suggestion-item:hover {
+      background: #ddfbf2;
+      color: #0f766e;
+    }
+
+    body[data-theme="mint"] .name-suggestion-item.active {
+      background: #c7f6e8;
+      color: #0f766e;
     }
 
     .product-tools input,
@@ -706,6 +864,360 @@
       display: grid;
       gap: 0.55rem;
       margin-top: 0.6rem;
+    }
+
+    .theme-section {
+      margin-top: 0.15rem;
+      display: grid;
+      gap: 0.36rem;
+    }
+
+    .theme-title,
+    .badge-title {
+      margin: 0;
+      font-size: 0.76rem;
+      color: #6b7280;
+      font-weight: 700;
+    }
+
+    .theme-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .theme-option {
+      min-height: 30px;
+      border-radius: 999px;
+      border: 1px solid #e6d6df;
+      background: #ffffff;
+      color: #475569;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0 0.58rem;
+      cursor: pointer;
+    }
+
+    .theme-option.active {
+      border-color: #f3a7cb;
+      color: #be185d;
+      background: #fff1f8;
+    }
+
+    .badge-section {
+      margin-top: 0.3rem;
+      display: grid;
+      gap: 0.42rem;
+    }
+
+    .level-text {
+      margin: 0;
+      font-size: 0.76rem;
+      color: #6e6077;
+    }
+
+    .badge-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.35rem;
+    }
+
+    .badge-item {
+      border: 1px solid #eddce6;
+      border-radius: 10px;
+      background: #fffafd;
+      padding: 0.42rem 0.5rem;
+      font-size: 0.72rem;
+      color: #6b7280;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .badge-item.unlocked {
+      border-color: #f5bfd8;
+      color: #a21c64;
+      background: #fff1f8;
+    }
+
+    .wishlist-form {
+      display: grid;
+      gap: 0.45rem;
+      margin-top: 0.35rem;
+    }
+
+    .wishlist-warning {
+      margin: 0;
+      font-size: 0.72rem;
+      color: #b45309;
+      min-height: 1em;
+    }
+
+    .wishlist-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .wishlist-item {
+      border: 1px solid #eedfe8;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 0.52rem 0.58rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .wishlist-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .wishlist-name {
+      margin: 0;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #374151;
+      line-height: 1.35;
+    }
+
+    .wishlist-meta {
+      margin: 0;
+      font-size: 0.72rem;
+      color: #76859c;
+    }
+
+    body[data-theme="dark"] {
+      background: linear-gradient(180deg, #2b2f3a 0%, #333947 100%);
+      color: #f2f5fa;
+    }
+
+    body[data-theme="dark"] .main-screen,
+    body[data-theme="dark"] .main-header,
+    body[data-theme="dark"] .tab-bar,
+    body[data-theme="dark"] .card,
+    body[data-theme="dark"] .product-item,
+    body[data-theme="dark"] .setting-button,
+    body[data-theme="dark"] .theme-option,
+    body[data-theme="dark"] .wishlist-item,
+    body[data-theme="dark"] .focus-banner-button {
+      background: #25212f;
+      color: #ede9f6;
+      border-color: #3a3348;
+    }
+
+    body[data-theme="dark"] .tab-item.active {
+      color: #93c5fd;
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.06));
+    }
+
+    body[data-theme="dark"] .save-button {
+      background: linear-gradient(135deg, #60a5fa, #3b82f6);
+      box-shadow: 0 8px 18px rgba(59, 130, 246, 0.28);
+    }
+
+    body[data-theme="dark"] .focus-banner {
+      background: linear-gradient(120deg, #31394a 0%, #2d3646 100%);
+      border-color: #4a5870;
+    }
+
+    body[data-theme="dark"] .focus-banner-text,
+    body[data-theme="dark"] .theme-title,
+    body[data-theme="dark"] .badge-title,
+    body[data-theme="dark"] .level-text,
+    body[data-theme="dark"] .setting-note,
+    body[data-theme="dark"] .wishlist-meta {
+      color: #cdd8ea;
+    }
+
+    body[data-theme="dark"] .focus-banner-button,
+    body[data-theme="dark"] .theme-option.active {
+      color: #bfdbfe;
+      border-color: #6a88b6;
+      background: #2d3c55;
+    }
+
+    body[data-theme="dark"] .badge-item {
+      border-color: #4d5a72;
+      background: #2e384a;
+      color: #d8e3f2;
+    }
+
+    body[data-theme="dark"] .badge-item.unlocked {
+      border-color: #6a8bc1;
+      color: #dbeafe;
+      background: #324766;
+    }
+
+    body[data-theme="dark"] .category-name {
+      color: #dbe7f8;
+    }
+
+    body[data-theme="dark"] .category-bar {
+      background: #3a4559;
+    }
+
+    body[data-theme="dark"] .category-bar-fill {
+      background: linear-gradient(90deg, #60a5fa, #3b82f6);
+    }
+
+    body[data-theme="dark"] .category-value {
+      color: #bfdbfe;
+    }
+
+    body[data-theme="dark"] .main-content {
+      background: #2a303d;
+    }
+
+    body[data-theme="dark"] .product-tools,
+    body[data-theme="dark"] .field input,
+    body[data-theme="dark"] .field select,
+    body[data-theme="dark"] .product-tools input,
+    body[data-theme="dark"] .product-tools select {
+      background: #303746;
+      color: #edf3fb;
+      border-color: #495369;
+    }
+
+    body[data-theme="dark"] .name-image-preview {
+      border-color: #4f607b;
+      background: #2d3a4d;
+    }
+
+    body[data-theme="dark"] .name-image-preview img {
+      border-color: #556786;
+      background: #253247;
+    }
+
+    body[data-theme="dark"] .name-image-preview p {
+      color: #d5e4f8;
+    }
+
+    body[data-theme="dark"] .camera-button {
+      border-color: #6c7ea0;
+      background: #2d3c55;
+      color: #dbeafe;
+      box-shadow: 0 0 0 0 rgba(96, 165, 250, 0);
+      transition: filter var(--motion-fast), opacity var(--motion-fast), transform var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast);
+    }
+
+    body[data-theme="dark"] .camera-note {
+      color: #bdd0ea;
+    }
+
+    body[data-theme="dark"] .camera-button:hover {
+      box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.16);
+    }
+
+    body[data-theme="mint"] .main-content {
+      background: #edfdf9;
+    }
+
+    body[data-theme="mint"] .main-screen {
+      border-color: #bfe9dd;
+    }
+
+    body[data-theme="mint"] {
+      background: linear-gradient(180deg, #def7f0 0%, #cdf3e8 100%);
+    }
+
+    body[data-theme="mint"] .main-header,
+    body[data-theme="mint"] .tab-bar {
+      background: #f2fffb;
+    }
+
+    body[data-theme="mint"] .focus-banner {
+      background: linear-gradient(120deg, #e9fcf5 0%, #dcfaf0 100%);
+      border-color: #9fdfcb;
+    }
+
+    body[data-theme="mint"] .tab-item.active {
+      color: #0f766e;
+      background: linear-gradient(180deg, rgba(20, 184, 166, 0.2), rgba(20, 184, 166, 0.06));
+    }
+
+    body[data-theme="mint"] .save-button {
+      background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+      box-shadow: 0 8px 18px rgba(20, 184, 166, 0.25);
+    }
+
+    body[data-theme="mint"] .name-image-preview {
+      border-color: #a4e5d5;
+      background: #effdf8;
+    }
+
+    body[data-theme="mint"] .name-image-preview img {
+      border-color: #aee6d8;
+      background: #f8fffc;
+    }
+
+    body[data-theme="mint"] .name-image-preview p {
+      color: #0f766e;
+    }
+
+    body[data-theme="mint"] .camera-button {
+      border-color: #79d8c3;
+      background: #ecfdf8;
+      color: #0f766e;
+      box-shadow: 0 0 0 0 rgba(20, 184, 166, 0);
+      transition: filter var(--motion-fast), opacity var(--motion-fast), transform var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast);
+    }
+
+    body[data-theme="mint"] .camera-note {
+      color: #0f766e;
+    }
+
+    body[data-theme="mint"] .camera-button:hover {
+      box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.16);
+    }
+
+    body[data-theme="mint"] .theme-title,
+    body[data-theme="mint"] .badge-title,
+    body[data-theme="mint"] .level-text,
+    body[data-theme="mint"] .setting-note,
+    body[data-theme="mint"] .wishlist-meta {
+      color: #0f766e;
+    }
+
+    body[data-theme="mint"] .focus-banner-button,
+    body[data-theme="mint"] .theme-option.active {
+      color: #0f766e;
+      border-color: #8bd7c6;
+      background: #f0fdfa;
+    }
+
+    body[data-theme="mint"] .badge-item {
+      border-color: #a5e2d3;
+      background: #f4fffc;
+      color: #0f766e;
+    }
+
+    body[data-theme="mint"] .badge-item.unlocked {
+      border-color: #6fd5bf;
+      color: #0f766e;
+      background: #dcfdf4;
+    }
+
+    body[data-theme="mint"] .category-name {
+      color: #0f766e;
+    }
+
+    body[data-theme="mint"] .category-bar {
+      background: #ccf2e8;
+    }
+
+    body[data-theme="mint"] .category-bar-fill {
+      background: linear-gradient(90deg, #2dd4bf, #14b8a6);
+    }
+
+    body[data-theme="mint"] .category-value {
+      color: #0f766e;
     }
 
     .setting-note {
@@ -822,6 +1334,10 @@
           </div>
         </div>
         <p id="main-subtitle">비회원 모드로 둘러보는 중이에요</p>
+        <div class="focus-banner" id="focus-banner" aria-live="polite">
+          <p class="focus-banner-text" id="focus-banner-text">✨ 이번 주 체크할 제품을 정리해볼까요?</p>
+          <button type="button" class="focus-banner-button" id="focus-banner-button">바로 보기</button>
+        </div>
       </header>
 
       <section class="main-content">
@@ -836,6 +1352,12 @@
               <span class="summary-sep">|</span>
               <span class="summary-metric">만료 <strong id="summary-expired-count">0</strong></span>
             </div>
+          </article>
+          <article class="card">
+            <h3>카테고리 통계</h3>
+            <p id="category-stats-desc">현재 카테고리 분포를 보여줘요.</p>
+            <div class="category-stats" id="category-stats-list"></div>
+            <p class="category-empty hidden" id="category-stats-empty">등록된 제품이 없어서 통계를 표시할 수 없어요.</p>
           </article>
           <article class="card hidden" id="product-list-card">
             <h3>내 제품 목록</h3>
@@ -913,9 +1435,46 @@
             <p id="settings-login-state">현재 상태: 비회원 모드</p>
             <div class="setting-stack">
               <p class="setting-note" id="settings-user-name">계정 정보: -</p>
+              <div class="theme-section">
+                <p class="theme-title">테마(화면 스타일)</p>
+                <div class="theme-options">
+                  <button type="button" class="theme-option" id="theme-light-button" data-theme="light">라이트</button>
+                  <button type="button" class="theme-option" id="theme-dark-button" data-theme="dark">다크</button>
+                  <button type="button" class="theme-option" id="theme-mint-button" data-theme="mint">민트</button>
+                </div>
+              </div>
+              <div class="badge-section">
+                <p class="badge-title">루틴 배지</p>
+                <p class="level-text" id="level-text">Lv.1 · 시작 단계</p>
+                <ul class="badge-list" id="badge-list"></ul>
+              </div>
               <button type="button" class="setting-button" id="settings-logout-button">로그인 화면으로 돌아가기</button>
               <button type="button" class="setting-button delete hidden" id="settings-clear-all-button">전체 파우치 삭제</button>
             </div>
+          </article>
+        </section>
+
+        <section class="view-panel hidden" id="view-wishlist">
+          <article class="card">
+            <h3 id="wishlist-title">위시리스트 0개</h3>
+            <p id="wishlist-desc">사고 싶은 제품을 저장해두고, 내 파우치와 겹치는지 확인해요.</p>
+            <form class="wishlist-form" id="wishlist-form">
+              <div class="field">
+                <label for="wishlist-name">위시 제품명</label>
+                <input id="wishlist-name" name="wishlistName" type="text" placeholder="예: 벨벳 틴트 07호" required autocomplete="off">
+              </div>
+              <div class="field">
+                <label for="wishlist-memo">메모(선택)</label>
+                <input id="wishlist-memo" name="wishlistMemo" type="text" placeholder="예: 겨울 쿨톤용">
+              </div>
+              <p class="wishlist-warning" id="wishlist-warning"></p>
+              <button class="save-button" type="submit">위시리스트에 저장</button>
+            </form>
+          </article>
+          <article class="card">
+            <h3>저장된 위시리스트</h3>
+            <ul class="wishlist-list" id="wishlist-list"></ul>
+            <p class="list-empty hidden" id="wishlist-empty">아직 저장된 위시 제품이 없어요.</p>
           </article>
         </section>
       </section>
@@ -924,6 +1483,7 @@
         <button class="tab-item active" type="button" data-tab="pouch">내 파우치</button>
         <button class="tab-item" type="button" data-tab="add">등록하기</button>
         <button class="tab-item" type="button" data-tab="soon">유통기한 임박</button>
+        <button class="tab-item" type="button" data-tab="wishlist">위시리스트</button>
         <button class="tab-item" type="button" data-tab="settings">설정</button>
       </nav>
     </section>
@@ -940,6 +1500,9 @@
     const guestButton = document.getElementById("guest-button");
     const authStatus = document.getElementById("auth-status");
     const mainSubtitle = document.getElementById("main-subtitle");
+    const focusBanner = document.getElementById("focus-banner");
+    const focusBannerText = document.getElementById("focus-banner-text");
+    const focusBannerButton = document.getElementById("focus-banner-button");
     const profileBadge = document.getElementById("profile-badge");
     const profileAvatarButton = document.getElementById("profile-avatar-button");
     const profileAvatar = document.getElementById("profile-avatar");
@@ -951,6 +1514,7 @@
     const viewPouch = document.getElementById("view-pouch");
     const viewAdd = document.getElementById("view-add");
     const viewSoon = document.getElementById("view-soon");
+    const viewWishlist = document.getElementById("view-wishlist");
     const viewSettings = document.getElementById("view-settings");
     const addProductForm = document.getElementById("add-product-form");
     const addFormTitle = document.getElementById("add-form-title");
@@ -971,6 +1535,9 @@
     const summaryTotalCount = document.getElementById("summary-total-count");
     const summarySoonCount = document.getElementById("summary-soon-count");
     const summaryExpiredCount = document.getElementById("summary-expired-count");
+    const categoryStatsDesc = document.getElementById("category-stats-desc");
+    const categoryStatsList = document.getElementById("category-stats-list");
+    const categoryStatsEmpty = document.getElementById("category-stats-empty");
     const productListCard = document.getElementById("product-list-card");
     const productSearchInput = document.getElementById("product-search-input");
     const productCategoryFilter = document.getElementById("product-category-filter");
@@ -984,6 +1551,17 @@
     const settingsUserName = document.getElementById("settings-user-name");
     const settingsLogoutButton = document.getElementById("settings-logout-button");
     const settingsClearAllButton = document.getElementById("settings-clear-all-button");
+    const themeOptionButtons = document.querySelectorAll(".theme-option");
+    const levelText = document.getElementById("level-text");
+    const badgeList = document.getElementById("badge-list");
+    const wishlistTitle = document.getElementById("wishlist-title");
+    const wishlistDesc = document.getElementById("wishlist-desc");
+    const wishlistForm = document.getElementById("wishlist-form");
+    const wishlistNameInput = document.getElementById("wishlist-name");
+    const wishlistMemoInput = document.getElementById("wishlist-memo");
+    const wishlistWarning = document.getElementById("wishlist-warning");
+    const wishlistList = document.getElementById("wishlist-list");
+    const wishlistEmpty = document.getElementById("wishlist-empty");
     function showImageLoadFailedPreview() {
       nameImagePreviewImg.src = getPlaceholderImageUrl();
       nameImagePreviewImg.removeAttribute("data-source-url");
@@ -1035,9 +1613,13 @@
     const GOOGLE_CLIENT_ID_KEY = "google_oauth_client_id";
     const LEGACY_PRODUCTS_STORAGE_KEY = "cocopau_products";
     const PRODUCTS_STORAGE_PREFIX = "cocopau_products::";
+    const WISHLIST_STORAGE_PREFIX = "cocopau_wishlist::";
     const APP_SESSION_KEY = "cocopau_app_session";
     const APP_PROFILE_KEY = "cocopau_profile";
     const APP_LAST_POUCH_KEY = "cocopau_last_pouch_key";
+    const APP_THEME_KEY = "cocopau_theme";
+    const APP_STREAK_LAST_DATE_KEY = "cocopau_streak_last_date";
+    const APP_STREAK_COUNT_KEY = "cocopau_streak_count";
     const SOON_DAY_THRESHOLD = 15;
     const GOOGLE_CLIENT_ID = String(
       APP_CONFIG.googleClientId || "986841478749-8al2nk1ohe1n5b4rsh5jj58kqpir7j8l.apps.googleusercontent.com"
@@ -1067,6 +1649,8 @@
     let currentAccountId = "";
     let currentAccountEmail = "-";
     let products = loadProducts();
+    let wishlist = [];
+    let streakCount = 1;
     let editingProductId = null;
     let pendingDeleteProductId = null;
     let pendingDeleteAll = false;
@@ -1124,16 +1708,28 @@
       if (!keyword) {
         return getPlaceholderImageUrl();
       }
-      return getPlaceholderImageUrl();
+
+      const label = keyword.slice(0, 10);
+      const encodedLabel = encodeURIComponent(label);
+      return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Crect width='160' height='160' rx='14' fill='%23ffffff'/%3E%3Crect x='46' y='24' width='68' height='112' rx='14' fill='%23fff4fa' stroke='%23f4d8e8' stroke-width='3'/%3E%3Crect x='62' y='16' width='36' height='10' rx='4' fill='%23f8dbe9'/%3E%3Crect x='56' y='58' width='48' height='34' rx='8' fill='%23ffffff' stroke='%23efd5e3' stroke-width='2'/%3E%3Ctext x='80' y='79' text-anchor='middle' font-size='12' font-family='Noto Sans KR, sans-serif' fill='%23b0457f'%3E" + encodedLabel + "%3C/text%3E%3C/svg%3E";
     }
 
     function resolveProductImageUrl(name, existingImageUrl) {
       const existing = String(existingImageUrl || "").trim();
       if (existing) {
         const normalizedExisting = existing.toLowerCase();
-        if (normalizedExisting.includes("torriden-sample.png") || normalizedExisting.includes("source.unsplash.com")) {
+        if (normalizedExisting.includes("source.unsplash.com") || normalizedExisting.includes("torriden-sample.png")) {
           return "";
         }
+
+        if (/^data:image\//i.test(existing)) {
+          return existing;
+        }
+
+        if (/^https?:\/\//i.test(existing)) {
+          return existing;
+        }
+
         return existing;
       }
       const presetImageUrl = findPresetProductImageUrl(name);
@@ -1154,10 +1750,10 @@
         || url.startsWith("data:image/svg+xml");
     }
 
-    function toDisplayImageUrl(imageUrl) {
+    function toDisplayImageUrl(imageUrl, fallbackName) {
       const raw = String(imageUrl || "").trim();
       if (!raw) {
-        return getPlaceholderImageUrl();
+        return getNameBasedFallbackImageUrl(fallbackName);
       }
 
       if (!/^https?:\/\//i.test(raw)) {
@@ -1376,7 +1972,7 @@
         return;
       }
 
-      nameImagePreviewImg.src = toDisplayImageUrl(safeImageUrl);
+      nameImagePreviewImg.src = toDisplayImageUrl(safeImageUrl, safeTitle);
       nameImagePreviewImg.alt = "";
       nameImagePreviewText.textContent = "";
       nameImagePreview.classList.remove("hidden");
@@ -1558,6 +2154,61 @@
       }
     }
 
+    function selectBestSingleProductImage(items, keyword) {
+      if (!Array.isArray(items) || items.length === 0) {
+        return "";
+      }
+
+      const queryTokens = String(keyword || "")
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean);
+      const rejectPattern = /(손등|손에|손샷|손목|사람|모델|사용컷|착샷|발색|메이크업룩|룩북|튜토리얼|리뷰|후기|비교|추천|모음|세트|기획|구성|1\+1|2\+1|n개|묶음|컬렉션|전색|swatch|swatches|hand|model|review|lookbook|set|bundle|collection)/i;
+      const multiCountPattern = /([2-9]|10)\s*(개|종|입|pcs|개입|팩|세트|set)/i;
+
+      const candidates = [];
+      items.forEach((item) => {
+        const imageUrl = String((item && item.imageUrl) || "").trim();
+        if (!imageUrl) {
+          return;
+        }
+
+        const rawTitle = String((item && item.title) || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+        if (!rawTitle) {
+          return;
+        }
+
+        if (rejectPattern.test(rawTitle) || multiCountPattern.test(rawTitle)) {
+          return;
+        }
+
+        let score = 0;
+        const lowerTitle = rawTitle.toLowerCase();
+        queryTokens.forEach((token) => {
+          if (token && lowerTitle.includes(token)) {
+            score += 5;
+          }
+        });
+
+        if (/(단품|본품|제품컷|제품 이미지|공식|official|single)/i.test(rawTitle)) {
+          score += 8;
+        }
+
+        if (/(특가|할인|최저가|판매|쇼핑|스토어|shop|store|mall)/i.test(rawTitle)) {
+          score -= 2;
+        }
+
+        candidates.push({ imageUrl, score });
+      });
+
+      if (candidates.length === 0) {
+        return "";
+      }
+
+      candidates.sort((a, b) => b.score - a.score);
+      return candidates[0].imageUrl;
+    }
+
     async function fetchProductImageFromNaver(name) {
       const keyword = String(name || "").trim();
       if (!keyword || keyword.length < 2 || !PRODUCT_IMAGE_SEARCH_ENDPOINT || !productImageSearchEnabled) {
@@ -1577,7 +2228,8 @@
 
       for (const endpoint of candidates) {
         try {
-          const requestUrl = endpoint + "?q=" + encodeURIComponent(keyword);
+          const imageFocusedKeyword = keyword + " 화장품 제품 단독";
+          const requestUrl = endpoint + "?q=" + encodeURIComponent(imageFocusedKeyword);
           const response = await fetch(requestUrl, {
             method: "GET",
             headers: { Accept: "application/json" }
@@ -1602,9 +2254,9 @@
             continue;
           }
 
-          const first = payload.items.find((item) => item && typeof item.imageUrl === "string" && item.imageUrl.trim());
-          if (first) {
-            return String(first.imageUrl).trim();
+          const picked = selectBestSingleProductImage(payload.items, keyword);
+          if (picked) {
+            return picked;
           }
         } catch (error) {
           lastErrorMessage = error && error.message ? String(error.message) : "요청 실패";
@@ -1638,8 +2290,13 @@
 
       const preferred = String(preferredImageUrl || "").trim();
       if (preferred) {
-        nameImagePreviewImg.src = toDisplayImageUrl(preferred);
-        nameImagePreviewImg.setAttribute("data-source-url", preferred);
+        const safePreferred = resolveProductImageUrl(name, preferred);
+        nameImagePreviewImg.src = toDisplayImageUrl(safePreferred, name);
+        if (safePreferred) {
+          nameImagePreviewImg.setAttribute("data-source-url", safePreferred);
+        } else {
+          nameImagePreviewImg.removeAttribute("data-source-url");
+        }
         nameImagePreviewImg.alt = "";
         nameImagePreviewText.textContent = "'" + name + "' 저장된 제품 이미지";
         nameImagePreview.classList.remove("hidden");
@@ -1647,15 +2304,15 @@
       }
 
       const requestSeq = ++imagePreviewRequestSeq;
-      const fallbackImageUrl = getPlaceholderImageUrl();
+      const fallbackImageUrl = getNameBasedFallbackImageUrl(name);
       nameImagePreviewImg.src = fallbackImageUrl;
       nameImagePreviewImg.removeAttribute("data-source-url");
       nameImagePreviewImg.alt = "";
-      nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지를 찾는 중...";
+      nameImagePreviewText.textContent = "'" + name + "' 단독형 대표 이미지를 표시하고 있어요.";
       nameImagePreview.classList.remove("hidden");
 
       if (!productImageSearchEnabled) {
-        nameImagePreviewText.textContent = "'" + name + "' 키 없이 사용할 수 있는 대표 이미지를 표시 중이에요.";
+        nameImagePreviewText.textContent = "'" + name + "' 단독형 대표 이미지를 표시하고 있어요.";
       }
 
       try {
@@ -1672,7 +2329,7 @@
           return;
         }
 
-        nameImagePreviewImg.src = toDisplayImageUrl(naverImageUrl);
+        nameImagePreviewImg.src = toDisplayImageUrl(naverImageUrl, name);
         nameImagePreviewImg.setAttribute("data-source-url", naverImageUrl);
         nameImagePreviewImg.alt = "";
         nameImagePreviewText.textContent = "'" + name + "' 실제 제품 이미지(네이버)";
@@ -1841,6 +2498,100 @@
       localStorage.setItem(APP_LAST_POUCH_KEY, storageKey);
     }
 
+    function getCurrentWishlistStorageKey() {
+      if (currentAuthMode === "google") {
+        const identity = String(currentAccountId || currentAccountEmail || "").trim().toLowerCase();
+        if (!identity) {
+          return null;
+        }
+
+        return WISHLIST_STORAGE_PREFIX + "google::" + encodeURIComponent(identity);
+      }
+
+      return WISHLIST_STORAGE_PREFIX + "guest";
+    }
+
+    function loadWishlist() {
+      const storageKey = getCurrentWishlistStorageKey();
+      if (!storageKey) {
+        return [];
+      }
+
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) {
+        return [];
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveWishlist() {
+      const storageKey = getCurrentWishlistStorageKey();
+      if (!storageKey) {
+        return;
+      }
+
+      localStorage.setItem(storageKey, JSON.stringify(wishlist));
+    }
+
+    function getTodayYmd() {
+      return formatDateLocal(toDayStart(new Date()));
+    }
+
+    function setTheme(themeName, persist) {
+      const normalized = (themeName === "dark" || themeName === "mint") ? themeName : "light";
+      if (normalized === "light") {
+        document.body.removeAttribute("data-theme");
+      } else {
+        document.body.setAttribute("data-theme", normalized);
+      }
+
+      themeOptionButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.theme === normalized);
+      });
+
+      if (persist) {
+        localStorage.setItem(APP_THEME_KEY, normalized);
+      }
+    }
+
+    function restoreTheme() {
+      const savedTheme = String(localStorage.getItem(APP_THEME_KEY) || "light");
+      setTheme(savedTheme, false);
+    }
+
+    function markDailyVisit() {
+      const today = getTodayYmd();
+      const lastDate = String(localStorage.getItem(APP_STREAK_LAST_DATE_KEY) || "");
+      const savedCount = Number(localStorage.getItem(APP_STREAK_COUNT_KEY) || "1");
+      streakCount = Number.isFinite(savedCount) && savedCount > 0 ? savedCount : 1;
+
+      if (lastDate === today) {
+        return;
+      }
+
+      if (lastDate) {
+        const last = toDayStart(lastDate);
+        const now = toDayStart(today);
+        const diffDays = Math.round((now - last) / (1000 * 60 * 60 * 24));
+        if (diffDays === 1) {
+          streakCount += 1;
+        } else {
+          streakCount = 1;
+        }
+      } else {
+        streakCount = 1;
+      }
+
+      localStorage.setItem(APP_STREAK_LAST_DATE_KEY, today);
+      localStorage.setItem(APP_STREAK_COUNT_KEY, String(streakCount));
+    }
+
     function applySessionStateFromData(session, profile) {
       if (!session || !session.inMain) {
         startScreen.classList.remove("hidden");
@@ -1855,7 +2606,9 @@
         profileDropdown.classList.add("hidden");
         renderSettings();
         products = loadProducts();
+        wishlist = loadWishlist();
         renderProducts();
+        renderWishlist();
         return;
       }
 
@@ -1890,8 +2643,11 @@
 
       switchTab("pouch");
       products = loadProducts();
+      wishlist = loadWishlist();
+      markDailyVisit();
       renderSettings();
       renderProducts();
+      renderWishlist();
       refreshTemporaryProductImages();
     }
 
@@ -2007,6 +2763,116 @@
       }
     }
 
+    function renderCategoryStats() {
+      if (!categoryStatsList || !categoryStatsEmpty || !categoryStatsDesc) {
+        return;
+      }
+
+      if (!Array.isArray(products) || products.length === 0) {
+        categoryStatsList.innerHTML = "";
+        categoryStatsEmpty.classList.remove("hidden");
+        categoryStatsDesc.textContent = "현재 카테고리 분포를 보여줘요.";
+        return;
+      }
+
+      const counts = {};
+      products.forEach((item) => {
+        const key = String(item && item.category ? item.category : "기타");
+        counts[key] = (counts[key] || 0) + 1;
+      });
+
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      const maxCount = sorted[0] ? sorted[0][1] : 1;
+      const topLabel = sorted[0] ? sorted[0][0] : "-";
+      const topCount = sorted[0] ? sorted[0][1] : 0;
+      categoryStatsDesc.textContent = "가장 많은 카테고리: " + topLabel + " (" + topCount + "개)";
+      categoryStatsEmpty.classList.add("hidden");
+      categoryStatsList.innerHTML = sorted.map(([name, count]) => {
+        const width = Math.max(8, Math.round((count / maxCount) * 100));
+        return "<div class=\"category-row\">"
+          + "<span class=\"category-name\">" + escapeHtml(name) + "</span>"
+          + "<span class=\"category-bar\"><span class=\"category-bar-fill\" style=\"width:" + width + "%\"></span></span>"
+          + "<span class=\"category-value\">" + count + "</span>"
+          + "</div>";
+      }).join("");
+    }
+
+    function getUnlockedBadges(total, soonCount, expiredCount) {
+      return [
+        { key: "first-product", label: "첫 등록", unlocked: total >= 1 },
+        { key: "streak-3", label: "연속 3일 체크", unlocked: streakCount >= 3 },
+        { key: "ten-products", label: "파우치 10개", unlocked: total >= 10 },
+        { key: "no-expired", label: "만료 제로", unlocked: total > 0 && expiredCount === 0 },
+        { key: "wishlist-5", label: "위시 5개", unlocked: wishlist.length >= 5 }
+      ];
+    }
+
+    function renderBadgeSummary(total, soonCount, expiredCount) {
+      if (!badgeList || !levelText) {
+        return;
+      }
+
+      const badges = getUnlockedBadges(total, soonCount, expiredCount);
+      const unlockedCount = badges.filter((badge) => badge.unlocked).length;
+      const level = 1 + unlockedCount;
+      levelText.textContent = "Lv." + level + " · 연속 체크 " + streakCount + "일";
+      badgeList.innerHTML = badges.map((badge) => {
+        const statusText = badge.unlocked ? "획득" : "미획득";
+        return "<li class=\"badge-item " + (badge.unlocked ? "unlocked" : "") + "\">"
+          + (badge.unlocked ? "🏅 " : "🔒 ")
+          + escapeHtml(badge.label)
+          + " · "
+          + statusText
+          + "</li>";
+      }).join("");
+    }
+
+    function normalizeWishlistName(value) {
+      return String(value || "").trim().toLowerCase().replace(/\s+/g, "");
+    }
+
+    function findSimilarOwnedProduct(wishName) {
+      const target = normalizeWishlistName(wishName);
+      if (!target) {
+        return "";
+      }
+
+      const matched = products.find((item) => {
+        const source = normalizeWishlistName(item && item.name ? item.name : "");
+        return source && (source.includes(target) || target.includes(source));
+      });
+
+      return matched ? String(matched.name || "") : "";
+    }
+
+    function renderWishlist() {
+      if (!wishlistList || !wishlistEmpty || !wishlistTitle || !wishlistDesc) {
+        return;
+      }
+
+      wishlistTitle.textContent = "위시리스트 " + wishlist.length + "개";
+      wishlistDesc.textContent = wishlist.length > 0
+        ? "사고 싶은 제품 " + wishlist.length + "개를 모아두었어요."
+        : "사고 싶은 제품을 저장해두고, 내 파우치와 겹치는지 확인해요.";
+
+      wishlistEmpty.classList.toggle("hidden", wishlist.length > 0);
+      wishlistList.innerHTML = wishlist.map((item) => {
+        const duplicateName = findSimilarOwnedProduct(item.name);
+        const duplicateText = duplicateName
+          ? "<p class=\"wishlist-meta\">⚠️ 내 파우치에 비슷한 제품: " + escapeHtml(duplicateName) + "</p>"
+          : "";
+
+        return "<li class=\"wishlist-item\">"
+          + "<div class=\"wishlist-item-top\">"
+          + "<p class=\"wishlist-name\">" + escapeHtml(item.name) + "</p>"
+          + "<button type=\"button\" class=\"tiny-button delete\" data-wish-action=\"delete\" data-id=\"" + item.id + "\">삭제</button>"
+          + "</div>"
+          + (item.memo ? "<p class=\"wishlist-meta\">메모: " + escapeHtml(item.memo) + "</p>" : "")
+          + duplicateText
+          + "</li>";
+      }).join("");
+    }
+
     function renderProducts() {
       const total = products.length;
       const expiredCount = products.filter((item) => getProductStatus(item).isExpired).length;
@@ -2023,6 +2889,9 @@
       summaryTotalCount.textContent = String(total);
       summarySoonCount.textContent = String(soonCount);
       summaryExpiredCount.textContent = String(expiredCount);
+      updateFocusBanner(total, soonCount, expiredCount);
+      renderCategoryStats();
+      renderBadgeSummary(total, soonCount, expiredCount);
 
       if (total === 0) {
         registeredCountDesc.textContent = "아직 제품이 없어요. 아래 탭의 등록하기에서 시작해요.";
@@ -2055,7 +2924,7 @@
 
         return "<li class=\"product-item\">"
           + "<div class=\"product-row\">"
-            + "<img class=\"product-thumb\" src=\"" + escapeHtml(toDisplayImageUrl(itemImageUrl)) + "\" alt=\"" + escapeHtml(item.name) + " 이미지\" loading=\"lazy\" onerror=\"this.onerror=null;this.removeAttribute('src');this.setAttribute('alt','이미지 없음');\">"
+            + "<img class=\"product-thumb\" src=\"" + escapeHtml(toDisplayImageUrl(itemImageUrl, item.name)) + "\" alt=\"" + escapeHtml(item.name) + " 이미지\" loading=\"lazy\" onerror=\"this.onerror=null;this.removeAttribute('src');this.setAttribute('alt','이미지 없음');\">"
             + "<div class=\"product-main\">"
               + "<p class=\"product-item-name\">" + escapeHtml(item.name) + "</p>"
               + "<p class=\"product-item-meta\">"
@@ -2073,6 +2942,33 @@
       productListEmpty.classList.toggle("hidden", filteredProducts.length > 0);
 
       renderSoonProducts();
+    }
+
+    function updateFocusBanner(total, soonCount, expiredCount) {
+      if (!focusBanner || !focusBannerText || !focusBannerButton) {
+        return;
+      }
+
+      if (total === 0) {
+        focusBannerText.textContent = "✨ 첫 제품 1개 등록하면 파우치 관리가 시작돼요";
+        focusBannerButton.textContent = "등록하기";
+        return;
+      }
+
+      if (expiredCount > 0) {
+        focusBannerText.textContent = "⚠️ 만료 제품 " + expiredCount + "개가 있어요. 먼저 정리해요";
+        focusBannerButton.textContent = "임박 보기";
+        return;
+      }
+
+      if (soonCount > 0) {
+        focusBannerText.textContent = "✨ 이번 주 체크할 임박 제품 " + soonCount + "개";
+        focusBannerButton.textContent = "임박 보기";
+        return;
+      }
+
+      focusBannerText.textContent = "💗 지금 파우치 컨디션이 좋아요. 계속 유지해볼까요?";
+      focusBannerButton.textContent = "내 파우치";
     }
 
     function toDayStart(dateLike) {
@@ -2103,38 +2999,46 @@
     }
 
     function renderSoonProducts() {
-      const soonItems = [];
+      const dueItems = [];
+      const expiredItems = [];
 
       products.forEach((item) => {
         const status = getProductStatus(item);
         const combined = { ...item, ...status };
 
         if (status.isSoon) {
-          soonItems.push(combined);
+          dueItems.push(combined);
+        } else if (status.isExpired) {
+          expiredItems.push(combined);
         }
       });
 
-      soonItems.sort((a, b) => a.diffDays - b.diffDays);
+      const soonItems = dueItems.concat(expiredItems);
+      soonItems.sort((a, b) => b.diffDays - a.diffDays);
 
-      soonCountTitle.textContent = "유통기한 임박 " + soonItems.length + "개";
+      soonCountTitle.textContent = "유통기한 임박/만료 " + soonItems.length + "개";
 
       if (soonItems.length === 0) {
-        soonCountDesc.textContent = "남은 15일 이하 제품이 없어요.";
+        soonCountDesc.textContent = "임박 또는 만료된 제품이 없어요.";
       } else {
-        soonCountDesc.textContent = "남은 15일 이하 제품 " + soonItems.length + "개";
+        soonCountDesc.textContent = "임박 " + dueItems.length + "개 · 만료 " + expiredItems.length + "개";
       }
 
       soonListCard.classList.toggle("hidden", soonItems.length === 0);
 
       soonList.innerHTML = soonItems.map((item) => {
         const itemImageUrl = resolveProductImageUrl(item.name, item.imageUrl);
+        const pillText = item.isExpired
+          ? "만료 D+" + Math.abs(item.diffDays)
+          : "D-" + item.diffDays;
+        const pillClass = item.isExpired ? "expired" : "soon";
         return "<li class=\"product-item\">"
           + "<div class=\"product-row\">"
-            + "<img class=\"product-thumb\" src=\"" + escapeHtml(toDisplayImageUrl(itemImageUrl)) + "\" alt=\"" + escapeHtml(item.name) + " 이미지\" loading=\"lazy\" onerror=\"this.onerror=null;this.removeAttribute('src');this.setAttribute('alt','이미지 없음');\">"
+            + "<img class=\"product-thumb\" src=\"" + escapeHtml(toDisplayImageUrl(itemImageUrl, item.name)) + "\" alt=\"" + escapeHtml(item.name) + " 이미지\" loading=\"lazy\" onerror=\"this.onerror=null;this.removeAttribute('src');this.setAttribute('alt','이미지 없음');\">"
             + "<div class=\"product-main\">"
               + "<p class=\"product-item-name\">" + escapeHtml(item.name) + "</p>"
               + "<p class=\"product-item-meta\">만료일 " + escapeHtml(formatDateLocal(item.expiry)) + "</p>"
-              + "<span class=\"status-pill soon\">D-" + item.diffDays + "</span>"
+              + "<span class=\"status-pill " + pillClass + "\">" + pillText + "</span>"
             + "</div>"
           + "</div>"
           + "</li>";
@@ -2170,16 +3074,24 @@
       viewPouch.classList.toggle("hidden", tabName !== "pouch");
       viewAdd.classList.toggle("hidden", tabName !== "add");
       viewSoon.classList.toggle("hidden", tabName !== "soon");
+      viewWishlist.classList.toggle("hidden", tabName !== "wishlist");
       viewSettings.classList.toggle("hidden", tabName !== "settings");
 
       if (tabName === "settings") {
         renderSettings();
       } else if (tabName === "add") {
         renderNameImagePreview();
+      } else if (tabName === "wishlist") {
+        renderWishlist();
       }
     }
 
     function renderSettings() {
+      const total = products.length;
+      const expiredCount = products.filter((item) => getProductStatus(item).isExpired).length;
+      const soonCount = products.filter((item) => getProductStatus(item).isSoon).length;
+      renderBadgeSummary(total, soonCount, expiredCount);
+
       if (currentAuthMode === "google") {
         settingsLoginState.textContent = "현재 상태: Google 로그인";
         settingsUserName.textContent = "계정 정보: " + currentAccountName + " (" + (currentAccountEmail || "이메일 없음") + ")";
@@ -2204,6 +3116,35 @@
         switchTab(button.dataset.tab);
       });
     });
+
+    themeOptionButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        setTheme(button.dataset.theme || "light", true);
+      });
+    });
+
+    if (focusBannerButton) {
+      focusBannerButton.addEventListener("click", () => {
+        if (products.length === 0) {
+          if (currentAuthMode !== "google") {
+            alert("제품 등록은 로그인 후 이용할 수 있어요.");
+            switchTab("settings");
+            return;
+          }
+
+          switchTab("add");
+          productNameInput.focus();
+          return;
+        }
+
+        if (products.some((item) => getProductStatus(item).isSoon || getProductStatus(item).isExpired)) {
+          switchTab("soon");
+          return;
+        }
+
+        switchTab("pouch");
+      });
+    }
 
     productSearchInput.addEventListener("input", () => {
       renderProducts();
@@ -2365,6 +3306,58 @@
         deleteProduct(id);
       }
     });
+
+    if (wishlistForm) {
+      wishlistForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const name = String(wishlistNameInput.value || "").trim();
+        const memo = String(wishlistMemoInput.value || "").trim();
+        if (!name) {
+          wishlistWarning.textContent = "제품명을 입력해 주세요.";
+          return;
+        }
+
+        const duplicateWish = wishlist.find((item) => normalizeWishlistName(item.name) === normalizeWishlistName(name));
+        if (duplicateWish) {
+          wishlistWarning.textContent = "이미 같은 제품이 위시리스트에 있어요.";
+          return;
+        }
+
+        wishlist.unshift({
+          id: Date.now(),
+          name,
+          memo
+        });
+        saveWishlist();
+        wishlistForm.reset();
+        const similarOwned = findSimilarOwnedProduct(name);
+        wishlistWarning.textContent = similarOwned
+          ? "내 파우치에 '" + similarOwned + "'가 있어서 중복 구매를 한 번 더 확인해 주세요."
+          : "위시리스트에 저장했어요.";
+        renderWishlist();
+        renderSettings();
+      });
+    }
+
+    if (wishlistList) {
+      wishlistList.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-wish-action]");
+        if (!button) {
+          return;
+        }
+
+        if (button.dataset.wishAction === "delete") {
+          const id = Number(button.dataset.id);
+          const before = wishlist.length;
+          wishlist = wishlist.filter((item) => item.id !== id);
+          if (wishlist.length !== before) {
+            saveWishlist();
+            renderWishlist();
+            renderSettings();
+          }
+        }
+      });
+    }
 
     cancelEditButton.addEventListener("click", () => {
       resetFormMode();
@@ -2591,6 +3584,7 @@
       currentAccountId = "";
       currentAccountEmail = "-";
       products = loadProducts();
+      wishlist = loadWishlist();
       profileBadge.classList.add("hidden");
       profileDropdown.classList.add("hidden");
       localStorage.removeItem(APP_PROFILE_KEY);
@@ -2598,6 +3592,7 @@
 
       authStatus.textContent = "로그아웃 되었어요. 다시 로그인해 주세요.";
       renderSettings();
+      renderWishlist();
       saveSessionState();
     }
 
@@ -2612,20 +3607,31 @@
       }
 
       if (event.key.startsWith(PRODUCTS_STORAGE_PREFIX)) {
-        if (event.key !== currentStorageKey) {
-          return;
+        if (event.key === currentStorageKey) {
+          products = loadProducts();
+          renderProducts();
+          renderWishlist();
+          renderSettings();
         }
+      }
 
-        products = loadProducts();
-        renderProducts();
+      const currentWishlistKey = getCurrentWishlistStorageKey();
+      if (event.key.startsWith(WISHLIST_STORAGE_PREFIX) && currentWishlistKey && event.key === currentWishlistKey) {
+        wishlist = loadWishlist();
+        renderWishlist();
+        renderSettings();
       }
     });
 
     migrateLegacyProductsIfNeeded();
     migrateLegacySessionIfNeeded();
+    restoreTheme();
+    markDailyVisit();
     products = loadProducts();
+    wishlist = loadWishlist();
     renderProducts();
     renderSoonProducts();
+    renderWishlist();
     renderSettings();
     restoreSessionState();
 
@@ -2643,8 +3649,11 @@
       migrateEmailScopedProductsToAccountId(currentAccountId, currentAccountEmail);
 
       products = loadProducts();
+      wishlist = loadWishlist();
+      markDailyVisit();
       renderSettings();
       renderProducts();
+      renderWishlist();
       refreshTemporaryProductImages();
 
       const storageKey = getCurrentPouchStorageKey();
@@ -2814,11 +3823,15 @@
       mainScreen.classList.remove("hidden");
       currentAuthMode = "guest";
       currentAccountName = "비회원";
+      currentAccountId = "";
       currentAccountEmail = "-";
       products = loadProducts();
+      wishlist = loadWishlist();
+      markDailyVisit();
       renderSettings();
       switchTab("pouch");
       renderProducts();
+      renderWishlist();
       saveSessionState();
     });
   </script>
