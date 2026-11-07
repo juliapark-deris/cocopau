@@ -2102,7 +2102,7 @@
 
     async function recognizeCameraText(file) {
       if (!window.Tesseract || typeof window.Tesseract.recognize !== "function") {
-        throw new Error("사진 분석 도구가 아직 로드되지 않았어요.");
+        return "";
       }
 
       const result = await window.Tesseract.recognize(file, "kor+eng", {
@@ -2120,6 +2120,10 @@
         .replace(/\s+/g, " ")
         .trim();
       if (!base) {
+        return "";
+      }
+
+      if (/^(img|image|pxl|mvimg|dsc)\s*\d{3,}$/i.test(base)) {
         return "";
       }
 
@@ -2164,7 +2168,12 @@
 
         const query = buildCameraSearchQuery(rawText);
         if (!query) {
-          saveResult.textContent = "사진 글자를 잘 읽지 못했어요. 조금 더 선명하게 다시 찍어 주세요.";
+          const fallbackApplied = await tryAnalyzeWithFileName(file);
+          if (!fallbackApplied) {
+            productNameInput.value = "촬영한 제품";
+            renderNameImagePreview();
+            saveResult.textContent = "자동 인식이 어려워서 기본 이름을 넣었어요. 제품명만 살짝 수정해서 저장해 주세요.";
+          }
           return;
         }
 
@@ -2195,7 +2204,9 @@
         console.error("Camera analysis failed", error);
         const fallbackApplied = await tryAnalyzeWithFileName(file);
         if (!fallbackApplied) {
-          saveResult.textContent = "사진 분석에 실패했어요. 사진을 조금 더 밝게 찍거나, 제품명을 직접 입력해 주세요.";
+          productNameInput.value = "촬영한 제품";
+          renderNameImagePreview();
+          saveResult.textContent = "자동 인식이 어려워서 기본 이름을 넣었어요. 제품명만 살짝 수정해서 저장해 주세요.";
         }
       } finally {
         if (requestSeq === cameraAnalysisRequestSeq) {
