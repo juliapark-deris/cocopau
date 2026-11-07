@@ -458,6 +458,7 @@
       display: grid;
       gap: 0.35rem;
       margin-top: 0.4rem;
+      position: relative;
     }
 
     .camera-note {
@@ -466,6 +467,16 @@
       color: #7b889d;
       text-align: left;
       line-height: 1.4;
+    }
+
+    .camera-file-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      left: 0;
+      top: 0;
     }
 
     .save-result {
@@ -1392,7 +1403,7 @@
                 </div>
                 <div class="camera-tools">
                   <button type="button" class="camera-button" id="product-camera-button">카메라로 찍어서 분석하기</button>
-                  <input id="product-camera-input" class="hidden" type="file" accept="image/*" capture="environment">
+                  <input id="product-camera-input" class="camera-file-input" type="file" accept="image/*" capture="environment">
                 </div>
                 <p class="camera-note">사진 속 글자를 읽어서 제품명을 자동으로 채워드려요.</p>
               </div>
@@ -2101,6 +2112,43 @@
       return String((result && result.data && result.data.text) || "").trim();
     }
 
+    function extractKeywordFromFileName(fileName) {
+      const base = String(fileName || "")
+        .replace(/\.[^.]+$/, "")
+        .replace(/[_\-]+/g, " ")
+        .replace(/[^\w\s가-힣]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (!base) {
+        return "";
+      }
+
+      const cleaned = normalizeSuggestionTitle(base, base);
+      return cleaned || base.slice(0, 20);
+    }
+
+    async function tryAnalyzeWithFileName(file) {
+      const fallbackKeyword = extractKeywordFromFileName(file && file.name ? file.name : "");
+      if (!fallbackKeyword || fallbackKeyword.length < 2) {
+        return false;
+      }
+
+      const suggestions = await fetchProductNameSuggestions(fallbackKeyword);
+      if (!Array.isArray(suggestions) || suggestions.length === 0) {
+        productNameInput.value = fallbackKeyword;
+        renderNameImagePreview();
+        saveResult.textContent = "사진 분석이 느리거나 실패해서 파일명 기반으로 '" + fallbackKeyword + "'를 넣었어요.";
+        return true;
+      }
+
+      const primary = suggestions[0];
+      productNameInput.value = primary.title;
+      renderNameSuggestions(suggestions);
+      previewSuggestionImage(primary.title, primary.imageUrl);
+      saveResult.textContent = "사진 분석이 느리거나 실패해서 파일명 기반 추천 '" + primary.title + "'을(를) 적용했어요.";
+      return true;
+    }
+
     async function analyzeCameraProductPhoto(file) {
       const requestSeq = ++cameraAnalysisRequestSeq;
       saveResult.textContent = "사진에서 제품명을 읽는 중이에요...";
@@ -2145,7 +2193,10 @@
         }
 
         console.error("Camera analysis failed", error);
-        saveResult.textContent = "사진 분석에 실패했어요. 다시 찍거나 직접 입력해 주세요.";
+        const fallbackApplied = await tryAnalyzeWithFileName(file);
+        if (!fallbackApplied) {
+          saveResult.textContent = "사진 분석에 실패했어요. 사진을 조금 더 밝게 찍거나, 제품명을 직접 입력해 주세요.";
+        }
       } finally {
         if (requestSeq === cameraAnalysisRequestSeq) {
           productCameraButton.disabled = false;
@@ -3155,6 +3206,11 @@
     });
 
     productCameraButton.addEventListener("click", () => {
+      if (typeof productCameraInput.showPicker === "function") {
+        productCameraInput.showPicker();
+        return;
+      }
+
       productCameraInput.click();
     });
 
