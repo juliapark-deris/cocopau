@@ -8,7 +8,6 @@
   <meta http-equiv="Expires" content="0">
   <title>코코파우</title>
   <script src="./app-config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root {
@@ -440,43 +439,6 @@
       cursor: pointer;
       transition: filter var(--motion-fast), opacity var(--motion-fast), transform var(--motion-fast), box-shadow var(--motion-fast);
       box-shadow: 0 8px 18px rgba(236, 72, 153, 0.25);
-    }
-
-    .camera-button {
-      min-height: 38px;
-      border: 1px solid #f5c2d9;
-      border-radius: 12px;
-      background: #fff5f9;
-      color: #be185d;
-      font-size: 0.85rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: filter var(--motion-fast), opacity var(--motion-fast), transform var(--motion-fast), border-color var(--motion-fast);
-    }
-
-    .camera-tools {
-      display: grid;
-      gap: 0.35rem;
-      margin-top: 0.4rem;
-      position: relative;
-    }
-
-    .camera-note {
-      margin: 0.35rem 0 0;
-      font-size: 0.74rem;
-      color: #7b889d;
-      text-align: left;
-      line-height: 1.4;
-    }
-
-    .camera-file-input {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      opacity: 0;
-      pointer-events: none;
-      left: 0;
-      top: 0;
     }
 
     .save-result {
@@ -962,7 +924,7 @@
     .wishlist-warning {
       margin: 0;
       font-size: 0.72rem;
-      color: #b45309;
+      color: #76859c;
       min-height: 1em;
     }
 
@@ -1110,22 +1072,6 @@
       color: #d5e4f8;
     }
 
-    body[data-theme="dark"] .camera-button {
-      border-color: #6c7ea0;
-      background: #2d3c55;
-      color: #dbeafe;
-      box-shadow: 0 0 0 0 rgba(96, 165, 250, 0);
-      transition: filter var(--motion-fast), opacity var(--motion-fast), transform var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast);
-    }
-
-    body[data-theme="dark"] .camera-note {
-      color: #bdd0ea;
-    }
-
-    body[data-theme="dark"] .camera-button:hover {
-      box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.16);
-    }
-
     body[data-theme="mint"] .main-content {
       background: #edfdf9;
     }
@@ -1170,22 +1116,6 @@
 
     body[data-theme="mint"] .name-image-preview p {
       color: #0f766e;
-    }
-
-    body[data-theme="mint"] .camera-button {
-      border-color: #79d8c3;
-      background: #ecfdf8;
-      color: #0f766e;
-      box-shadow: 0 0 0 0 rgba(20, 184, 166, 0);
-      transition: filter var(--motion-fast), opacity var(--motion-fast), transform var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast);
-    }
-
-    body[data-theme="mint"] .camera-note {
-      color: #0f766e;
-    }
-
-    body[data-theme="mint"] .camera-button:hover {
-      box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.16);
     }
 
     body[data-theme="mint"] .theme-title,
@@ -1268,7 +1198,6 @@
       .tab-item:hover,
       .tiny-button:hover,
       .setting-button:hover,
-      .camera-button:hover,
       .save-button:hover,
       .profile-avatar-button:hover,
       .social-button:hover,
@@ -1282,7 +1211,6 @@
     .social-button:active,
     .guest-button:active,
     .save-button:active,
-    .camera-button:active,
     .tiny-button:active,
     .setting-button:active,
     .tab-item:active,
@@ -1295,7 +1223,6 @@
     .social-button:focus-visible,
     .guest-button:focus-visible,
     .save-button:focus-visible,
-    .camera-button:focus-visible,
     .tiny-button:focus-visible,
     .setting-button:focus-visible,
     .tab-item:focus-visible,
@@ -1401,11 +1328,6 @@
                   <img id="name-image-preview-img" alt="">
                   <p id="name-image-preview-text"></p>
                 </div>
-                <div class="camera-tools">
-                  <button type="button" class="camera-button" id="product-camera-button">카메라로 찍어서 분석하기</button>
-                  <input id="product-camera-input" class="camera-file-input" type="file" accept="image/*" capture="environment">
-                </div>
-                <p class="camera-note">사진 속 글자를 읽어서 제품명을 자동으로 채워드려요.</p>
               </div>
               <div class="field">
                 <label for="product-category">카테고리</label>
@@ -1536,8 +1458,6 @@
     const nameImagePreview = document.getElementById("name-image-preview");
     const nameImagePreviewImg = document.getElementById("name-image-preview-img");
     const nameImagePreviewText = document.getElementById("name-image-preview-text");
-    const productCameraButton = document.getElementById("product-camera-button");
-    const productCameraInput = document.getElementById("product-camera-input");
     const productCategoryInput = document.getElementById("product-category");
     const openedAtInput = document.getElementById("opened-at");
     const saveResult = document.getElementById("save-result");
@@ -1669,7 +1589,6 @@
     let imagePreviewRequestSeq = 0;
     let nameSuggestionTimerId = null;
     let nameSuggestionRequestSeq = 0;
-    let cameraAnalysisRequestSeq = 0;
     let activeSuggestionIndex = -1;
     let productImageSearchEnabled = Boolean(PRODUCT_IMAGE_SEARCH_ENDPOINT);
     let imageRefreshInFlight = false;
@@ -2079,303 +1998,6 @@
       productNameInput.removeAttribute("aria-activedescendant");
     }
 
-    function buildCameraSearchQuery(rawText) {
-      const lines = String(rawText || "")
-        .replace(/\r/g, "\n")
-        .split("\n")
-        .map((line) => normalizeWhitespace(line))
-        .filter((line) => line && line.length >= 2)
-        .filter((line) => !/^(?:www|http|barcode|qr|ean|isbn|lot|batch)/i.test(line));
-
-      if (lines.length === 0) {
-        return "";
-      }
-
-      const joined = lines.slice(0, 4).join(" ");
-      const cleaned = collapseRepeatedPhrase(
-        stripNoise(removeStoreNoise(joined))
-          .replace(/[|>•·/+,:[\]{}()"'“”‘’~]/g, " ")
-      );
-      const words = normalizeWhitespace(cleaned).split(/\s+/).filter(Boolean);
-      return words.slice(0, 8).join(" ");
-    }
-
-    function buildRelaxedCameraQuery(rawText) {
-      const cosmeticHintPattern = /(쿠션|틴트|립|선크림|크림|토너|세럼|앰플|파운데이션|마스카라|클렌징|폼|오일|로션|스킨|에센스|마스크|패드|선스틱|sunscreen|cushion|tint|lip|foundation|serum|toner|cream|cleanser|mascara)/i;
-      const lines = String(rawText || "")
-        .replace(/\r/g, "\n")
-        .split("\n")
-        .map((line) => normalizeWhitespace(line))
-        .filter((line) => line && line.length >= 2)
-        .map((line) => line.replace(/[^a-zA-Z0-9가-힣\s]/g, " ").replace(/\s+/g, " ").trim())
-        .filter(Boolean);
-
-      if (lines.length === 0) {
-        return "";
-      }
-
-      const scored = lines.map((line) => {
-        let score = 0;
-        if (cosmeticHintPattern.test(line)) {
-          score += 8;
-        }
-        if (/[가-힣]/.test(line)) {
-          score += 3;
-        }
-        if (/[a-zA-Z]/.test(line)) {
-          score += 2;
-        }
-        if (/\d/.test(line)) {
-          score += 1;
-        }
-        score += Math.min(line.length, 24) / 6;
-        return { line, score };
-      });
-
-      scored.sort((a, b) => b.score - a.score);
-      const best = scored[0] ? scored[0].line : "";
-      if (!best) {
-        return "";
-      }
-
-      const tokens = best.split(/\s+/).filter(Boolean);
-      return tokens.slice(0, 5).join(" ");
-    }
-
-    function scoreOcrText(text) {
-      const normalized = String(text || "").replace(/\s+/g, " ").trim();
-      if (!normalized) {
-        return 0;
-      }
-      const hangulCount = (normalized.match(/[가-힣]/g) || []).length;
-      const alphaCount = (normalized.match(/[a-zA-Z]/g) || []).length;
-      const digitCount = (normalized.match(/[0-9]/g) || []).length;
-      return (hangulCount * 2.4) + (alphaCount * 1.6) + (digitCount * 0.3) + Math.min(normalized.length, 120) * 0.08;
-    }
-
-    async function loadImageElement(dataUrl) {
-      return new Promise((resolve, reject) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = () => reject(new Error("이미지 로드 실패"));
-        image.src = dataUrl;
-      });
-    }
-
-    async function buildOcrImageVariants(file) {
-      const sourceDataUrl = await readFileAsDataUrl(file);
-      if (!sourceDataUrl) {
-        return [];
-      }
-
-      const image = await loadImageElement(sourceDataUrl);
-      const maxWidth = 1700;
-      const ratio = image.width > maxWidth ? (maxWidth / image.width) : 1;
-      const width = Math.max(1, Math.round(image.width * ratio));
-      const height = Math.max(1, Math.round(image.height * ratio));
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      if (!ctx) {
-        return [sourceDataUrl];
-      }
-
-      const variants = [];
-      const pushUnique = (dataUrlLike) => {
-        const value = String(dataUrlLike || "");
-        if (value && !variants.includes(value)) {
-          variants.push(value);
-        }
-      };
-
-      ctx.drawImage(image, 0, 0, width, height);
-      pushUnique(canvas.toDataURL("image/jpeg", 0.94));
-
-      const baseImageData = ctx.getImageData(0, 0, width, height);
-      const grayscale = new Uint8ClampedArray(baseImageData.data);
-      for (let i = 0; i < grayscale.length; i += 4) {
-        const lum = Math.round((grayscale[i] * 0.299) + (grayscale[i + 1] * 0.587) + (grayscale[i + 2] * 0.114));
-        const contrast = Math.max(0, Math.min(255, (lum - 128) * 1.45 + 128));
-        grayscale[i] = contrast;
-        grayscale[i + 1] = contrast;
-        grayscale[i + 2] = contrast;
-      }
-      ctx.putImageData(new ImageData(grayscale, width, height), 0, 0);
-      pushUnique(canvas.toDataURL("image/jpeg", 0.95));
-
-      const thresholdData = new Uint8ClampedArray(grayscale);
-      for (let i = 0; i < thresholdData.length; i += 4) {
-        const bw = thresholdData[i] > 145 ? 255 : 0;
-        thresholdData[i] = bw;
-        thresholdData[i + 1] = bw;
-        thresholdData[i + 2] = bw;
-      }
-      ctx.putImageData(new ImageData(thresholdData, width, height), 0, 0);
-      pushUnique(canvas.toDataURL("image/png"));
-
-      return variants.length > 0 ? variants : [sourceDataUrl];
-    }
-
-    async function ensureTesseractReady() {
-      if (window.Tesseract && typeof window.Tesseract.recognize === "function") {
-        return true;
-      }
-
-      const scriptUrls = [
-        "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js",
-        "https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"
-      ];
-
-      for (const url of scriptUrls) {
-        try {
-          await new Promise((resolve, reject) => {
-            const existing = document.querySelector("script[data-tesseract-fallback='" + url + "']");
-            if (existing) {
-              existing.addEventListener("load", resolve, { once: true });
-              existing.addEventListener("error", reject, { once: true });
-              return;
-            }
-
-            const script = document.createElement("script");
-            script.src = url;
-            script.async = true;
-            script.defer = true;
-            script.setAttribute("data-tesseract-fallback", url);
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-          });
-        } catch (error) {
-          // try next CDN
-        }
-
-        if (window.Tesseract && typeof window.Tesseract.recognize === "function") {
-          return true;
-        }
-      }
-
-      return false;
-    }
-
-    async function recognizeCameraText(file) {
-      const ready = await ensureTesseractReady();
-      if (!ready) {
-        return "";
-      }
-
-      const variants = await buildOcrImageVariants(file);
-      const pageSegModes = [6, 11];
-      let bestText = "";
-      let bestScore = -1;
-
-      for (const variant of variants) {
-        for (const psm of pageSegModes) {
-          try {
-            const result = await window.Tesseract.recognize(variant, "kor+eng", {
-              logger: () => {},
-              tessedit_pageseg_mode: psm,
-              preserve_interword_spaces: "1"
-            });
-            const text = String((result && result.data && result.data.text) || "").trim();
-            const score = scoreOcrText(text);
-            if (score > bestScore) {
-              bestScore = score;
-              bestText = text;
-            }
-          } catch (error) {
-            // continue next variant
-          }
-        }
-      }
-
-      return String(bestText || "").trim();
-    }
-
-    async function readFileAsDataUrl(file) {
-      if (!(file instanceof Blob)) {
-        return "";
-      }
-
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ""));
-        reader.onerror = () => reject(new Error("이미지 파일 읽기 실패"));
-        reader.readAsDataURL(file);
-      });
-    }
-
-    async function setCapturedPhotoPreview(file) {
-      const dataUrl = await readFileAsDataUrl(file);
-      if (!dataUrl) {
-        return false;
-      }
-
-      nameImagePreviewImg.src = dataUrl;
-      nameImagePreviewImg.setAttribute("data-source-url", dataUrl);
-      nameImagePreviewImg.alt = "촬영한 제품 사진";
-      nameImagePreviewText.textContent = "촬영한 사진을 제품 이미지로 사용해요.";
-      nameImagePreview.classList.remove("hidden");
-      return true;
-    }
-
-    async function analyzeCameraProductPhoto(file) {
-      const requestSeq = ++cameraAnalysisRequestSeq;
-      saveResult.textContent = "사진에서 제품명을 읽는 중이에요...";
-      productCameraButton.disabled = true;
-      productCameraInput.disabled = true;
-      hideNameSuggestions();
-
-      try {
-        const rawText = await recognizeCameraText(file);
-        if (requestSeq !== cameraAnalysisRequestSeq) {
-          return;
-        }
-
-        const query = buildCameraSearchQuery(rawText) || buildRelaxedCameraQuery(rawText);
-        if (!query) {
-          if (!productNameInput.value.trim()) {
-            productNameInput.value = "제품명 자동추출 중";
-          }
-          saveResult.textContent = "사진 글자를 더 선명하게 인식 중이에요. 잠시 후 제품명 수정하거나 저장해 주세요.";
-          return;
-        }
-
-        const suggestions = await fetchProductNameSuggestions(query);
-        if (requestSeq !== cameraAnalysisRequestSeq) {
-          return;
-        }
-
-        if (suggestions.length > 0) {
-          const primary = suggestions[0];
-          productNameInput.value = primary.title;
-          renderNameSuggestions(suggestions);
-          saveResult.textContent = "사진에서 '" + primary.title + "'로 찾았어요. 저장 버튼만 누르면 등록돼요.";
-        } else {
-          productNameInput.value = query;
-          saveResult.textContent = "사진에서 '" + query + "' 후보를 추출했어요.";
-        }
-
-        productNameInput.focus();
-        productNameInput.setSelectionRange(productNameInput.value.length, productNameInput.value.length);
-      } catch (error) {
-        if (requestSeq !== cameraAnalysisRequestSeq) {
-          return;
-        }
-
-        console.error("Camera analysis failed", error);
-        if (!productNameInput.value.trim()) {
-          productNameInput.value = "제품명 자동추출 중";
-        }
-        saveResult.textContent = "사진 자동 분석이 지연됐어요. 잠시 후 다시 찍으면 더 정확해요.";
-      } finally {
-        if (requestSeq === cameraAnalysisRequestSeq) {
-          productCameraButton.disabled = false;
-          productCameraInput.disabled = false;
-        }
-      }
-    }
-
     function selectBestSingleProductImage(items, keyword) {
       if (!Array.isArray(items) || items.length === 0) {
         return "";
@@ -2704,6 +2326,10 @@
 
       try {
         const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) {
+          return [];
+        }
+
         return Array.isArray(parsed) ? parsed : [];
       } catch (error) {
         return [];
@@ -3067,6 +2693,34 @@
       return matched ? String(matched.name || "") : "";
     }
 
+    function addOwnedProductToWishlist(product) {
+      if (!product || !product.name) {
+        return { ok: false, reason: "invalid" };
+      }
+
+      const name = String(product.name || "").trim();
+      const normalizedName = normalizeWishlistName(name);
+      if (!normalizedName) {
+        return { ok: false, reason: "invalid" };
+      }
+
+      const duplicateWish = wishlist.find((item) => normalizeWishlistName(item.name) === normalizedName);
+      if (duplicateWish) {
+        return { ok: false, reason: "duplicate" };
+      }
+
+      wishlist.unshift({
+        id: Date.now(),
+        name,
+        memo: "내 파우치에서 추가"
+      });
+      saveWishlist();
+      renderWishlist();
+      renderSettings();
+      renderProducts();
+      return { ok: true };
+    }
+
     function renderWishlist() {
       if (!wishlistList || !wishlistEmpty || !wishlistTitle || !wishlistDesc) {
         return;
@@ -3081,7 +2735,7 @@
       wishlistList.innerHTML = wishlist.map((item) => {
         const duplicateName = findSimilarOwnedProduct(item.name);
         const duplicateText = duplicateName
-          ? "<p class=\"wishlist-meta\">⚠️ 내 파우치에 비슷한 제품: " + escapeHtml(duplicateName) + "</p>"
+          ? "<p class=\"wishlist-meta\">내 파우치에도 있어요: " + escapeHtml(duplicateName) + "</p>"
           : "";
 
         return "<li class=\"wishlist-item\">"
@@ -3156,6 +2810,7 @@
             + "</div>"
           + "</div>"
           + "<div class=\"product-actions\">"
+            + "<button type=\"button\" class=\"tiny-button\" data-action=\"wish\" data-id=\"" + item.id + "\" aria-label=\"" + escapeHtml(item.name + " 위시리스트 추가") + "\">위시리스트에 추가</button>"
             + "<button type=\"button\" class=\"tiny-button\" data-action=\"edit\" data-id=\"" + item.id + "\">수정</button>"
             + "<button type=\"button\" class=\"tiny-button delete\" data-action=\"delete\" data-id=\"" + item.id + "\">삭제</button>"
           + "</div>"
@@ -3376,31 +3031,6 @@
       renderProducts();
     });
 
-    productCameraButton.addEventListener("click", () => {
-      if (typeof productCameraInput.showPicker === "function") {
-        productCameraInput.showPicker();
-        return;
-      }
-
-      productCameraInput.click();
-    });
-
-    productCameraInput.addEventListener("change", async () => {
-      const file = productCameraInput.files && productCameraInput.files[0];
-      productCameraInput.value = "";
-      if (!file) {
-        return;
-      }
-
-      try {
-        await setCapturedPhotoPreview(file);
-      } catch (error) {
-        console.error("Captured photo preview failed", error);
-      }
-
-      await analyzeCameraProductPhoto(file);
-    });
-
     productNameInput.addEventListener("input", () => {
       const keyword = productNameInput.value.trim();
       if (imagePreviewTimerId) {
@@ -3535,6 +3165,19 @@
         return;
       }
 
+      if (action === "wish") {
+        const targetProduct = products.find((item) => Number(item.id) === id);
+        const result = addOwnedProductToWishlist(targetProduct);
+        if (result.ok) {
+          saveResult.textContent = "위시리스트에 추가했어요.";
+        } else if (result.reason === "duplicate") {
+          saveResult.textContent = "이미 위시리스트에 있는 제품이에요.";
+        } else {
+          saveResult.textContent = "위시리스트 추가에 실패했어요.";
+        }
+        return;
+      }
+
       if (action === "delete") {
         deleteProduct(id);
       }
@@ -3565,7 +3208,7 @@
         wishlistForm.reset();
         const similarOwned = findSimilarOwnedProduct(name);
         wishlistWarning.textContent = similarOwned
-          ? "내 파우치에 '" + similarOwned + "'가 있어서 중복 구매를 한 번 더 확인해 주세요."
+          ? "내 파우치에도 '" + similarOwned + "'가 있어요."
           : "위시리스트에 저장했어요.";
         renderWishlist();
         renderSettings();
